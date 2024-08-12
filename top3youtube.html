@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending YouTube Videos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .video-widget {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        .video-thumbnail {
+            width: 100%;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+        .video-widget-content {
+            padding: 15px;
+        }
+        .video-widget h2 {
+            font-size: 18px;
+            margin: 0 0 10px;
+        }
+        .video-widget p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .video-widget a {
+            text-decoration: none;
+            color: #1a0dab;
+        }
+        .video-widget a:hover {
+            text-decoration: underline;
+        }
+        .content-selector {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .content-selector input {
+            padding: 5px;
+            font-size: 16px;
+        }
+        .content-selector button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .content-selector button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Trending YouTube Videos</h1>
+        <div class="content-selector">
+            <label for="countryCode">Enter Country Code:</label>
+            <input type="text" id="countryCode" placeholder="e.g., US">
+            <button onclick="fetchTopVideos()">Get Videos</button>
+        </div>
+        <div id="videosContainer"></div>
+    </div>
+
+    <script>
+        const youtubeApiKey = 'AIzaSyBEJhZHS6tIdUQm5GfREO2kHOyW3r4Qh0c'; // Replace with your YouTube API key
+
+        async function fetchTopVideos() {
+            const countryCode = document.getElementById('countryCode').value.toUpperCase();
+            const maxResults = 3;
+
+            if (!countryCode) {
+                alert('Please enter a country code.');
+                return;
+            }
+
+            try {
+                const today = new Date();
+                const last7Days = new Date(today);
+                last7Days.setDate(today.getDate() - 7);
+                const publishedAfter = last7Days.toISOString();
+
+                const searchResponse = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&order=viewCount&publishedAfter=${publishedAfter}&regionCode=${countryCode}&maxResults=${maxResults}&key=${youtubeApiKey}`);
+                if (!searchResponse.ok) throw new Error(`Search API request failed with status ${searchResponse.status}`);
+                const searchData = await searchResponse.json();
+
+                if (!searchData.items || searchData.items.length === 0) {
+                    document.getElementById('videosContainer').innerHTML = 'No videos found for the specified country code in the last 7 days.';
+                    return;
+                }
+
+                const videoIds = searchData.items.map(item => item.id.videoId).join(',');
+                const detailsResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoIds}&key=${youtubeApiKey}`);
+                if (!detailsResponse.ok) throw new Error(`Details API request failed with status ${detailsResponse.status}`);
+                const detailsData = await detailsResponse.json();
+
+                const videosContainer = document.getElementById('videosContainer');
+                videosContainer.innerHTML = '';
+
+                detailsData.items.forEach(video => {
+                    const videoId = video.id;
+                    const title = video.snippet.title;
+                    const thumbnail = video.snippet.thumbnails.high.url;
+                    const description = video.snippet.description;
+                    const url = `https://www.youtube.com/watch?v=${videoId}`;
+
+                    videosContainer.innerHTML += `
+                        <div class="video-widget">
+                            <img class="video-thumbnail" src="${thumbnail}" alt="${title}" onclick="window.open('${url}', '_blank')">
+                            <div class="video-widget-content">
+                                <h2><a href="${url}" target="_blank">${title}</a></h2>
+                                <p>${description}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error fetching top YouTube videos:', error);
+                document.getElementById('videosContainer').innerHTML = `Error fetching top YouTube videos: ${error.message}. Please try again later.`;
+            }
+        }
+    </script>
+</body>
+</html>
