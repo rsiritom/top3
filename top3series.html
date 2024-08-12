@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 3 Series</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+        .item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            flex: 1 1 300px;
+        }
+        .item-info {
+            flex: 2 1 600px;
+        }
+        .item-info h2 {
+            margin: 0 0 10px 0;
+        }
+        .item-info p {
+            margin: 5px 0;
+        }
+        .item-info a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .item-info a:hover {
+            text-decoration: underline;
+        }
+        .language-selector, .content-selector {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .language-selector img {
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            margin: 0 10px;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            transition: border-color 0.3s;
+        }
+        .language-selector img:hover {
+            border-color: #007bff;
+        }
+        .content-selector select {
+            padding: 5px;
+            font-size: 16px;
+        }
+        .links img {
+            width: 24px;
+            height: 24px;
+            margin: 0 5px;
+            vertical-align: middle;
+        }
+        .homepage-link {
+            display: inline-block;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        .homepage-link:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            .item {
+                flex-direction: column;
+                align-items: center;
+            }
+            .item img {
+                max-width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+        .language-flag.selected {
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="title">Top 3 Series</h1>
+        <div id="items"></div>
+        <!-- Homepage Link -->
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="index.html" class="homepage-link">Homepage</a>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = '29a18159e2f43f00312a90a7b88dd8d3';
+        const trendingSeriesUrl = `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}`;
+        const translateApiKey = 'YOUR_TRANSLATE_API_KEY'; // Replace with your Translate API key
+
+        async function translateText(text, targetLanguage) {
+            const url = `https://translation.googleapis.com/language/translate/v2?key=${translateApiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    q: text,
+                    target: targetLanguage
+                })
+            });
+
+            const data = await response.json();
+            return data.data.translations[0].translatedText;
+        }
+
+        async function fetchTopSeries() {
+            let items = [];
+            let itemsContainer = document.getElementById('items');
+            itemsContainer.innerHTML = '';
+
+            const response = await fetch(trendingSeriesUrl);
+            const data = await response.json();
+            items = data.results.slice(0, 3);
+
+            for (const item of items) {
+                const title = item.name;
+                const overview = item.overview;
+                const imageUrl = `https://image.tmdb.org/t/p/w500/${item.poster_path}`;
+                const linkUrl = `https://www.themoviedb.org/tv/${item.id}`;
+                const language = document.querySelector('.language-flag.selected')?.dataset.lang || 'en';
+                const translatedTitle = language === 'en' ? title : await translateText(title, language);
+                const translatedOverview = language === 'en' ? overview : await translateText(overview, language);
+
+                itemsContainer.innerHTML += `
+                    <div class="item">
+                        <img src="${imageUrl}" alt="${translatedTitle}">
+                        <div class="item-info">
+                            <h2>${translatedTitle}</h2>
+                            <p>${translatedOverview}</p>
+                            <p><a href="${linkUrl}" target="_blank">Learn more</a></p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchTopSeries();
+
+            const languageFlags = document.querySelectorAll('.language-flag');
+            languageFlags.forEach(flag => {
+                flag.addEventListener('click', (event) => {
+                    languageFlags.forEach(f => f.classList.remove('selected'));
+                    event.target.classList.add('selected');
+                    fetchTopSeries();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
