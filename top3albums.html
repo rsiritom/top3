@@ -178,6 +178,7 @@
                 const artist = album.artist;
                 const releaseDate = album.release_date;
                 const spotifyUrl = album.spotify_url;
+                const totalTracks = album.total_tracks;
 
                 itemsContainer.innerHTML += `
                     <div class="item">
@@ -186,6 +187,7 @@
                             <h2>${title}</h2>
                             <p>Artist: ${artist}</p>
                             <p>Release Date: ${releaseDate}</p>
+                            <p>Total Tracks: ${totalTracks}</p>
                             <p><a href="${spotifyUrl}" target="_blank">Listen on Spotify</a></p>
                         </div>
                     </div>
