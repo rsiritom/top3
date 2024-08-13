@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top 3 Series</title>
+    <title>Top 3 TV Series</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -105,7 +105,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="title">Top 3 Series</h1>
+        <h1 id="title">Top 3 TV Series</h1>
         <div id="items"></div>
         <!-- Homepage Link -->
         <div style="text-align: center; margin-top: 20px;">
@@ -115,7 +115,8 @@
 
     <script>
         const apiKey = '29a18159e2f43f00312a90a7b88dd8d3';
-        const trendingSeriesUrl = `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}`;
+        const trendingTvUrl = `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}`;
+        const genresUrl = `https://api.themoviedb.org/3/genre/tv/list?api_key=${apiKey}&language=en-US`;
         const translateApiKey = 'YOUR_TRANSLATE_API_KEY'; // Replace with your Translate API key
 
         async function translateText(text, targetLanguage) {
@@ -135,23 +136,51 @@
             return data.data.translations[0].translatedText;
         }
 
-        async function fetchTopSeries() {
+        async function fetchGenres() {
+            const response = await fetch(genresUrl);
+            const data = await response.json();
+            return data.genres;
+        }
+
+        async function fetchProviders(tvId) {
+            const response = await fetch(`https://api.themoviedb.org/3/tv/${tvId}/watch/providers?api_key=${apiKey}`);
+            const data = await response.json();
+            return data.results?.US?.flatrate?.map(provider => provider.provider_name).join(', ') || null;
+        }
+
+        async function fetchTopTvSeries() {
             let items = [];
             let itemsContainer = document.getElementById('items');
             itemsContainer.innerHTML = '';
 
-            const response = await fetch(trendingSeriesUrl);
+            const genres = await fetchGenres();
+            const genreMap = {};
+            genres.forEach(genre => {
+                genreMap[genre.id] = genre.name;
+            });
+
+            const response = await fetch(trendingTvUrl);
             const data = await response.json();
             items = data.results.slice(0, 3);
 
             for (const item of items) {
                 const title = item.name;
                 const overview = item.overview;
+                const firstAirDate = item.first_air_date; // Get the first air date
+                const genres = item.genre_ids.map(id => genreMap[id]).join(', '); // Map genre IDs to genre names
+                const popularity = item.popularity; // Get the popularity
+                const rating = (item.vote_average / 2).toFixed(1); // Convert vote_average to a 1-5 scale
+                const providers = await fetchProviders(item.id); // Get the streaming providers
                 const imageUrl = `https://image.tmdb.org/t/p/w500/${item.poster_path}`;
                 const linkUrl = `https://www.themoviedb.org/tv/${item.id}`;
                 const language = document.querySelector('.language-flag.selected')?.dataset.lang || 'en';
                 const translatedTitle = language === 'en' ? title : await translateText(title, language);
                 const translatedOverview = language === 'en' ? overview : await translateText(overview, language);
+                const translatedFirstAirDate = language === 'en' ? firstAirDate : await translateText(firstAirDate, language);
+                const translatedGenres = language === 'en' ? genres : await translateText(genres, language);
+                const translatedPopularity = language === 'en' ? popularity.toString() : await translateText(popularity.toString(), language);
+                const translatedRating = language === 'en' ? rating : await translateText(rating, language);
+                const translatedProviders = providers ? (language === 'en' ? providers : await translateText(providers, language)) : null;
 
                 itemsContainer.innerHTML += `
                     <div class="item">
@@ -159,6 +188,11 @@
                         <div class="item-info">
                             <h2>${translatedTitle}</h2>
                             <p>${translatedOverview}</p>
+                            <p><strong>First Air Date:</strong> ${translatedFirstAirDate}</p>
+                            <p><strong>Genres:</strong> ${translatedGenres}</p>
+                            <p><strong>Popularity:</strong> ${translatedPopularity}</p>
+                            <p><strong>Rating:</strong> ${translatedRating} / 5</p>
+                            ${translatedProviders ? `<p><strong>Streaming on:</strong> ${translatedProviders}</p>` : ''}
                             <p><a href="${linkUrl}" target="_blank">Learn more</a></p>
                         </div>
                     </div>
@@ -167,14 +201,14 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            fetchTopSeries();
+            fetchTopTvSeries();
 
             const languageFlags = document.querySelectorAll('.language-flag');
             languageFlags.forEach(flag => {
                 flag.addEventListener('click', (event) => {
                     languageFlags.forEach(f => f.classList.remove('selected'));
                     event.target.classList.add('selected');
-                    fetchTopSeries();
+                    fetchTopTvSeries();
                 });
             });
         });
