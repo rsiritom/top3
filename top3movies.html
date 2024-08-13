@@ -108,8 +108,9 @@
     </div>
 
     <script>
-        const translateApiKey = 'YOUR_TRANSLATE_API_KEY'; // Replace with your Translate API key
         const endpointUrl = 'https://rmanfretan.pythonanywhere.com/top3movies/20240813'; // Update with your endpoint
+
+        let currentLanguage = 'en'; // Default language
 
         async function fetchTopMovies() {
             let items = [];
@@ -126,7 +127,7 @@
             }
 
             for (const item of items) {
-                const { title, overview, release_date, genres, image_url, link_url, rating, trailer_url, providers } = item;
+                const { title, overview, overview_es, release_date, genres, image_url, link_url, rating, trailer_url, providers } = item;
 
                 // Process providers field
                 const providersText = providers && providers.length > 0 ? `Available on: ${providers.join(', ')}` : '';
@@ -136,7 +137,7 @@
                         <img src="${image_url}" alt="${title}">
                         <div class="item-info">
                             <h2 data-translate-key="${title}">${title}</h2>
-                            <p>${overview}</p>
+                            <p>${currentLanguage === 'es' ? overview_es : overview}</p>
                             <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
                             <p><strong data-translate-key="Genres">Genres:</strong> ${genres}</p>
                             <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
@@ -150,6 +151,8 @@
         }
 
         function changeLanguage(language) {
+            currentLanguage = language;
+
             document.querySelectorAll('.language-flag').forEach(flag => {
                 flag.classList.remove('selected');
             });
@@ -161,6 +164,9 @@
                 const translation = await getTranslation(key, language);
                 element.innerText = translation;
             });
+
+            // Re-fetch the movies to update the overview text
+            fetchTopMovies();
         }
 
         async function getTranslation(text, targetLanguage) {
