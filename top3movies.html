@@ -53,7 +53,7 @@
         .item-info a:hover {
             text-decoration: underline;
         }
-        .language-selector, .content-selector {
+        .language-selector {
             text-align: center;
             margin-bottom: 20px;
         }
@@ -68,16 +68,6 @@
         }
         .language-selector img:hover {
             border-color: #007bff;
-        }
-        .content-selector select {
-            padding: 5px;
-            font-size: 16px;
-        }
-        .links img {
-            width: 24px;
-            height: 24px;
-            margin: 0 5px;
-            vertical-align: middle;
         }
         .homepage-link {
             display: inline-block;
@@ -105,15 +95,20 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="title">Top 3 Movies</h1>
+        <h1 id="title" data-translate-key="Top 3 Movies">Top 3 Movies</h1>
+        <div class="language-selector">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
+        </div>
         <div id="items"></div>
         <!-- Homepage Link -->
         <div style="text-align: center; margin-top: 20px;">
-            <a href="index.html" class="homepage-link">Homepage</a>
+            <a href="index.html" class="homepage-link" data-translate-key="Homepage">Homepage</a>
         </div>
     </div>
 
     <script>
+        const translateApiKey = 'YOUR_TRANSLATE_API_KEY'; // Replace with your Translate API key
         const endpointUrl = 'https://rmanfretan.pythonanywhere.com/top3movies/20240813'; // Update with your endpoint
 
         async function fetchTopMovies() {
@@ -132,45 +127,64 @@
 
             for (const item of items) {
                 const { title, overview, release_date, genres, image_url, link_url, rating, trailer_url, providers } = item;
-                const translatedTitle = title;
-                const translatedOverview = overview;
-                const translatedReleaseDate = release_date;
-                const translatedGenres = genres;
-                const translatedRating = rating;
 
                 // Process providers field
                 const providersText = providers && providers.length > 0 ? `Available on: ${providers.join(', ')}` : '';
 
                 itemsContainer.innerHTML += `
                     <div class="item">
-                        <img src="${image_url}" alt="${translatedTitle}">
+                        <img src="${image_url}" alt="${title}">
                         <div class="item-info">
-                            <h2>${translatedTitle}</h2>
-                            <p>${translatedOverview}</p>
-                            <p><strong>Release Date:</strong> ${translatedReleaseDate}</p>
-                            <p><strong>Genres:</strong> ${translatedGenres}</p>
-                            <p><strong>Rating:</strong> ${translatedRating} / 10</p>
+                            <h2 data-translate-key="${title}">${title}</h2>
+                            <p>${overview}</p>
+                            <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
+                            <p><strong data-translate-key="Genres">Genres:</strong> ${genres}</p>
+                            <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
                             ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
-                            ${trailer_url ? `<p><a href="${trailer_url}" target="_blank">Watch Trailer</a></p>` : ''}
-                            <p><a href="${link_url}" target="_blank">Learn more</a></p>
+                            ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
+                            <p><a href="${link_url}" target="_blank" data-translate-key="Learn more">Learn more</a></p>
                         </div>
                     </div>
                 `;
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchTopMovies();
-
-            const languageFlags = document.querySelectorAll('.language-flag');
-            languageFlags.forEach(flag => {
-                flag.addEventListener('click', (event) => {
-                    languageFlags.forEach(f => f.classList.remove('selected'));
-                    event.target.classList.add('selected');
-                    fetchTopMovies();
-                });
+        function changeLanguage(language) {
+            document.querySelectorAll('.language-flag').forEach(flag => {
+                flag.classList.remove('selected');
             });
-        });
+
+            document.getElementById(language).classList.add('selected');
+            const elementsToTranslate = document.querySelectorAll('[data-translate-key]');
+            elementsToTranslate.forEach(async element => {
+                const key = element.getAttribute('data-translate-key');
+                const translation = await getTranslation(key, language);
+                element.innerText = translation;
+            });
+        }
+
+        async function getTranslation(text, targetLanguage) {
+            const translations = {
+                "Top 3 Movies": { "es": "Top 3 Películas" },
+                "Release Date": { "es": "Fecha de publicación" },
+                "Genres": { "es": "Géneros" },
+                "Rating": { "es": "Puntaje" },
+                "Watch Trailer": { "es": "Mira el Trailer" },
+                "Learn more": { "es": "Más detalles" },
+                "Homepage": { "es": "Inicio" }
+            };
+
+            return translations[text] && translations[text][targetLanguage] ? translations[text][targetLanguage] : text;
+        }
+
+        document.getElementById('en').addEventListener('click', () => changeLanguage('en'));
+        document.getElementById('es').addEventListener('click', () => changeLanguage('es'));
+
+        // Preselect English language on page load
+        changeLanguage('en');
+        
+        // Fetch content on page load
+        fetchTopMovies();
     </script>
 </body>
 </html>
