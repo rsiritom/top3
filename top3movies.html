@@ -148,6 +148,13 @@
             return data.results?.US?.flatrate?.map(provider => provider.provider_name).join(', ') || null;
         }
 
+        async function fetchTrailer(movieId) {
+            const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${apiKey}`);
+            const data = await response.json();
+            const trailer = data.results.find(video => video.type === 'Trailer');
+            return trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : null;
+        }
+
         async function fetchTopMovies() {
             let items = [];
             let itemsContainer = document.getElementById('items');
@@ -166,11 +173,12 @@
             for (const item of items) {
                 const title = item.title || item.name;
                 const overview = item.overview;
-                const releaseDate = item.release_date; // Get the release date
-                const genres = item.genre_ids.map(id => genreMap[id]).join(', '); // Map genre IDs to genre names
-                const popularity = item.popularity; // Get the popularity
-                const rating = (item.vote_average / 2).toFixed(1); // Convert vote_average to a 1-5 scale
-                const providers = await fetchProviders(item.id); // Get the streaming providers
+                const releaseDate = item.release_date;
+                const genres = item.genre_ids.map(id => genreMap[id]).join(', ');
+                const popularity = item.popularity;
+                const rating = (item.vote_average / 2).toFixed(1);
+                const providers = await fetchProviders(item.id);
+                const trailerUrl = await fetchTrailer(item.id);
                 const imageUrl = `https://image.tmdb.org/t/p/w500/${item.poster_path}`;
                 const linkUrl = `https://www.themoviedb.org/movie/${item.id}`;
                 const language = document.querySelector('.language-flag.selected')?.dataset.lang || 'en';
@@ -193,6 +201,7 @@
                             <p><strong>Popularity:</strong> ${translatedPopularity}</p>
                             <p><strong>Rating:</strong> ${translatedRating} / 5</p>
                             ${translatedProviders ? `<p><strong>Streaming on:</strong> ${translatedProviders}</p>` : ''}
+                            ${trailerUrl ? `<p><a href="${trailerUrl}" target="_blank">Watch Trailer</a></p>` : ''}
                             <p><a href="${linkUrl}" target="_blank">Learn more</a></p>
                         </div>
                     </div>
