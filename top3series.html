@@ -53,6 +53,15 @@
         .item-info a:hover {
             text-decoration: underline;
         }
+        .homepage-link {
+            display: inline-block;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        .homepage-link:hover {
+            text-decoration: underline;
+        }
         @media (max-width: 768px) {
             .item {
                 flex-direction: column;
@@ -63,24 +72,38 @@
                 margin-bottom: 10px;
             }
         }
-        .homepage-link {
-            display: inline-block;
-            text-decoration: none;
-            color: #007bff;
-            font-weight: bold;
+        .language-selector {
+            text-align: center;
+            margin-bottom: 20px;
         }
-        .homepage-link:hover {
-            text-decoration: underline;
+        .language-selector img {
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            margin: 0 10px;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            transition: border-color 0.3s;
+        }
+        .language-selector img:hover {
+            border-color: #007bff;
+        }
+        .language-flag.selected {
+            border-color: #007bff;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 id="title">Top 3 Series</h1>
+        <div class="language-selector">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
+        </div>
+        <h1 id="title" data-translate-key="Top 3 Series">Top 3 Series</h1>
         <div id="items"></div>
         <!-- Homepage Link -->
         <div style="text-align: center; margin-top: 20px;">
-            <a href="index.html" class="homepage-link">Homepage</a>
+            <a href="index.html" class="homepage-link" data-translate-key="Homepage">Homepage</a>
         </div>
     </div>
 
@@ -116,23 +139,56 @@
                     <div class="item">
                         <img src="${image_url}" alt="${translatedTitle}">
                         <div class="item-info">
-                            <h2>${translatedTitle}</h2>
+                            <h2 data-translate-key="${translatedTitle}">${translatedTitle}</h2>
                             <p>${translatedOverview}</p>
-                            ${translatedReleaseDate ? `<p><strong>Release Date:</strong> ${translatedReleaseDate}</p>` : ''}
-                            <p><strong>Genres:</strong> ${translatedGenres}</p>
-                            ${translatedRating ? `<p><strong>Rating:</strong> ${translatedRating} / 10</p>` : ''}
+                            ${translatedReleaseDate ? `<p><strong data-translate-key="Release Date">Release Date:</strong> ${translatedReleaseDate}</p>` : ''}
+                            <p><strong data-translate-key="Genres">Genres:</strong> ${translatedGenres}</p>
+                            ${translatedRating ? `<p><strong data-translate-key="Rating">Rating:</strong> ${translatedRating} / 10</p>` : ''}
                             ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
-                            ${trailer_url ? `<p><a href="${trailer_url}" target="_blank">Watch Trailer</a></p>` : ''}
-                            <p><a href="${link_url}" target="_blank">Learn more</a></p>
+                            ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
+                            <p><a href="${link_url}" target="_blank" data-translate-key="Learn more">Learn more</a></p>
                         </div>
                     </div>
                 `;
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchTopSeries();
-        });
+        function changeLanguage(language) {
+            document.querySelectorAll('.language-flag').forEach(flag => {
+                flag.classList.remove('selected');
+            });
+
+            document.getElementById(language).classList.add('selected');
+            const elementsToTranslate = document.querySelectorAll('[data-translate-key]');
+            elementsToTranslate.forEach(async element => {
+                const key = element.getAttribute('data-translate-key');
+                const translation = await getTranslation(key, language);
+                element.innerText = translation;
+            });
+        }
+
+        async function getTranslation(text, targetLanguage) {
+            const translations = {
+                "Top 3 Series": { "es": "Top 3 Series" },
+                "Release Date": { "es": "Fecha de publicación" },
+                "Genres": { "es": "Géneros" },
+                "Rating": { "es": "Puntaje" },
+                "Watch Trailer": { "es": "Mira el Trailer" },
+                "Learn more": { "es": "Más detalles" },
+                "Homepage": { "es": "Inicio" }
+            };
+
+            return translations[text] && translations[text][targetLanguage] ? translations[text][targetLanguage] : text;
+        }
+
+        document.getElementById('en').addEventListener('click', () => changeLanguage('en'));
+        document.getElementById('es').addEventListener('click', () => changeLanguage('es'));
+
+        // Preselect English language on page load
+        changeLanguage('en');
+        
+        // Fetch content on page load
+        fetchTopSeries();
     </script>
 </body>
 </html>
