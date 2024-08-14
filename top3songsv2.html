@@ -70,8 +70,23 @@
             border-color: #007bff;
         }
         .country-selector {
-            text-align: center;
+            display: flex;
+            justify-content: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .country-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #41e3cf;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .country-button.selected {
+            background-color: #12877b;
         }
         .homepage-link {
             display: inline-block;
@@ -92,9 +107,6 @@
                 margin-bottom: 10px;
             }
         }
-        .language-flag.selected {
-            border-color: #007bff;
-        }
     </style>
 </head>
 <body>
@@ -105,16 +117,14 @@
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
         </div>
         <div class="country-selector">
-            <select id="country-code">
-                <option value="AR">Argentina</option>
-                <option value="BR">Brazil</option>
-                <option value="FR">France</option>
-                <option value="US">United States</option>
-                <option value="UY">Uruguay</option>
-                <!-- Add more countries as needed -->
-            </select>
-            <button id="fetch-songs">Fetch Songs</button>
+            <button class="country-button" data-country="AR">Argentina</button>
+            <button class="country-button" data-country="BR">Brazil</button>
+            <button class="country-button" data-country="FR">France</button>
+            <button class="country-button" data-country="US">United States</button>
+            <button class="country-button" data-country="UY">Uruguay</button>
+            <!-- Add more country buttons as needed -->
         </div>
+        <p style="text-align: center;">Please select the country</p>
         <div id="songs"></div>
         <div style="text-align: center; margin-top: 20px;">
             <a href="index.html" class="homepage-link" data-translate-key="Homepage">Homepage</a>
@@ -184,12 +194,6 @@
             return document.querySelector('.language-flag.selected')?.dataset.lang || 'en';
         }
 
-        document.getElementById('fetch-songs').addEventListener('click', () => {
-            const country = document.getElementById('country-code').value;
-            const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
-            fetchTopSongs(date, country);
-        });
-
         document.querySelectorAll('.language-flag').forEach(flag => {
             flag.addEventListener('click', () => {
                 document.querySelectorAll('.language-flag').forEach(flag => flag.classList.remove('selected'));
@@ -205,11 +209,26 @@
             });
         }
 
-        // Initial fetch on page load
+        document.querySelectorAll('.country-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Deselect previously selected button
+                document.querySelectorAll('.country-button').forEach(btn => btn.classList.remove('selected'));
+                
+                // Select the clicked button
+                button.classList.add('selected');
+                
+                const country = button.dataset.country;
+                const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+                fetchTopSongs(date, country);
+            });
+        });
+
+        // Initial fetch if a country is selected by default
         document.addEventListener('DOMContentLoaded', () => {
-            const country = document.getElementById('country-code').value;
-            const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
-            fetchTopSongs(date, country);
+            const defaultButton = document.querySelector('.country-button');
+            if (defaultButton) {
+                defaultButton.click();
+            }
         });
     </script>
 </body>
