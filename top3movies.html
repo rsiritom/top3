@@ -109,44 +109,46 @@
 
     <script>
         const endpointUrl = 'https://rmanfretan.pythonanywhere.com/top3movies/20240813'; // Update with your endpoint
-
         let currentLanguage = 'en'; // Default language
 
         async function fetchTopMovies() {
-            let items = [];
-            let itemsContainer = document.getElementById('items');
-            itemsContainer.innerHTML = '';
+            const itemsContainer = document.getElementById('items');
+            itemsContainer.innerHTML = ''; // Clear previous items
 
             try {
                 const response = await fetch(endpointUrl);
-                items = await response.json();
+                const items = await response.json();
+                console.log('Fetched items:', items); // Debugging line to check the data
+
+                // Avoiding duplicate movie entries
+                const seenMovies = new Set();
+
+                items.forEach(item => {
+                    if (seenMovies.has(item.title)) return; // Skip if already processed
+                    seenMovies.add(item.title); // Mark movie as processed
+
+                    const { title, overview, overview_es, release_date, genres, image_url, link_url, rating, trailer_url, providers } = item;
+                    const providersText = providers && providers.length > 0 ? `Available on: ${providers.join(', ')}` : '';
+
+                    itemsContainer.innerHTML += `
+                        <div class="item">
+                            <img src="${image_url}" alt="${title}">
+                            <div class="item-info">
+                                <h2 data-translate-key="${title}">${title}</h2>
+                                <p>${currentLanguage === 'es' ? overview_es : overview}</p>
+                                <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
+                                <p><strong data-translate-key="Genres">Genres:</strong> ${genres}</p>
+                                <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
+                                ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
+                                ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
+                                <p><a href="${link_url}" target="_blank" data-translate-key="Learn more">Learn more</a></p>
+                            </div>
+                        </div>
+                    `;
+                });
             } catch (error) {
                 console.error('Error fetching data:', error);
                 itemsContainer.innerHTML = '<p>Error fetching data. Please try again later.</p>';
-                return;
-            }
-
-            for (const item of items) {
-                const { title, overview, overview_es, release_date, genres, image_url, link_url, rating, trailer_url, providers } = item;
-
-                // Process providers field
-                const providersText = providers && providers.length > 0 ? `Available on: ${providers.join(', ')}` : '';
-
-                itemsContainer.innerHTML += `
-                    <div class="item">
-                        <img src="${image_url}" alt="${title}">
-                        <div class="item-info">
-                            <h2 data-translate-key="${title}">${title}</h2>
-                            <p>${currentLanguage === 'es' ? overview_es : overview}</p>
-                            <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
-                            <p><strong data-translate-key="Genres">Genres:</strong> ${genres}</p>
-                            <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
-                            ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
-                            ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
-                            <p><a href="${link_url}" target="_blank" data-translate-key="Learn more">Learn more</a></p>
-                        </div>
-                    </div>
-                `;
             }
         }
 
@@ -187,10 +189,9 @@
         document.getElementById('es').addEventListener('click', () => changeLanguage('es'));
 
         // Preselect English language on page load
-        changeLanguage('en');
-        
-        // Fetch content on page load
-        fetchTopMovies();
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchTopMovies(); // Load movies on page load
+        });
     </script>
 </body>
 </html>
