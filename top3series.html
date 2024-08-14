@@ -53,6 +53,22 @@
         .item-info a:hover {
             text-decoration: underline;
         }
+        .language-selector {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .language-selector img {
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            margin: 0 10px;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            transition: border-color 0.3s;
+        }
+        .language-selector img:hover {
+            border-color: #007bff;
+        }
         .homepage-link {
             display: inline-block;
             text-decoration: none;
@@ -72,22 +88,6 @@
                 margin-bottom: 10px;
             }
         }
-        .language-selector {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .language-selector img {
-            cursor: pointer;
-            width: 24px;
-            height: 24px;
-            margin: 0 10px;
-            border: 2px solid transparent;
-            border-radius: 50%;
-            transition: border-color 0.3s;
-        }
-        .language-selector img:hover {
-            border-color: #007bff;
-        }
         .language-flag.selected {
             border-color: #007bff;
         }
@@ -95,11 +95,11 @@
 </head>
 <body>
     <div class="container">
+        <h1 id="title" data-translate-key="Top 3 Series">Top 3 Series</h1>
         <div class="language-selector">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
         </div>
-        <h1 id="title" data-translate-key="Top 3 Series">Top 3 Series</h1>
         <div id="items"></div>
         <!-- Homepage Link -->
         <div style="text-align: center; margin-top: 20px;">
@@ -117,51 +117,52 @@
         }
 
         const endpointUrl = `https://rmanfretan.pythonanywhere.com/top3series/${getCurrentDate()}`;
+        let currentLanguage = 'en'; // Default language
 
         async function fetchTopSeries() {
-            let items = [];
-            let itemsContainer = document.getElementById('items');
-            itemsContainer.innerHTML = '';
+            const itemsContainer = document.getElementById('items');
+            itemsContainer.innerHTML = ''; // Clear previous items
 
             try {
                 const response = await fetch(endpointUrl);
-                items = await response.json();
+                const items = await response.json();
+                console.log('Fetched items:', items); // Debugging line to check the data
+
+                // Avoiding duplicate series entries
+                const seenSeries = new Set();
+
+                items.forEach(item => {
+                    if (seenSeries.has(item.title)) return; // Skip if already processed
+                    seenSeries.add(item.title); // Mark series as processed
+
+                    const { title, overview, overview_es, release_date, genres, image_url, link_url, rating, trailer_url, providers } = item;
+                    const providersText = providers && providers.length > 0 ? `Available on: ${providers.join(', ')}` : '';
+
+                    itemsContainer.innerHTML += `
+                        <div class="item">
+                            <img src="${image_url}" alt="${title}">
+                            <div class="item-info">
+                                <h2 data-translate-key="${title}">${title}</h2>
+                                <p>${currentLanguage === 'es' ? overview_es : overview}</p>
+                                <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
+                                <p><strong data-translate-key="Genres">Genres:</strong> ${genres}</p>
+                                <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
+                                ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
+                                ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
+                                <p><a href="${link_url}" target="_blank" data-translate-key="Learn more">Learn more</a></p>
+                            </div>
+                        </div>
+                    `;
+                });
             } catch (error) {
                 console.error('Error fetching data:', error);
                 itemsContainer.innerHTML = '<p>Error fetching data. Please try again later.</p>';
-                return;
-            }
-
-            for (const item of items) {
-                const { title, overview, release_date, genres, image_url, link_url, rating, trailer_url, providers } = item;
-                const translatedTitle = title;
-                const translatedOverview = overview;
-                const translatedReleaseDate = release_date;
-                const translatedGenres = genres;
-                const translatedRating = rating;
-
-                // Process providers field
-                const providersText = providers && providers.length > 0 ? `Available on: ${providers.join(', ')}` : '';
-
-                itemsContainer.innerHTML += `
-                    <div class="item">
-                        <img src="${image_url}" alt="${translatedTitle}">
-                        <div class="item-info">
-                            <h2 data-translate-key="${translatedTitle}">${translatedTitle}</h2>
-                            <p>${translatedOverview}</p>
-                            ${translatedReleaseDate ? `<p><strong data-translate-key="Release Date">Release Date:</strong> ${translatedReleaseDate}</p>` : ''}
-                            <p><strong data-translate-key="Genres">Genres:</strong> ${translatedGenres}</p>
-                            ${translatedRating ? `<p><strong data-translate-key="Rating">Rating:</strong> ${translatedRating} / 10</p>` : ''}
-                            ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
-                            ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
-                            <p><a href="${link_url}" target="_blank" data-translate-key="Learn more">Learn more</a></p>
-                        </div>
-                    </div>
-                `;
             }
         }
 
         function changeLanguage(language) {
+            currentLanguage = language;
+
             document.querySelectorAll('.language-flag').forEach(flag => {
                 flag.classList.remove('selected');
             });
@@ -173,6 +174,9 @@
                 const translation = await getTranslation(key, language);
                 element.innerText = translation;
             });
+
+            // Re-fetch the series to update the overview text
+            fetchTopSeries();
         }
 
         async function getTranslation(text, targetLanguage) {
@@ -193,10 +197,9 @@
         document.getElementById('es').addEventListener('click', () => changeLanguage('es'));
 
         // Preselect English language on page load
-        changeLanguage('en');
-        
-        // Fetch content on page load
-        fetchTopSeries();
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchTopSeries(); // Load series on page load
+        });
     </script>
 </body>
 </html>
