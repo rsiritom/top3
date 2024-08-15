@@ -117,7 +117,8 @@
             border-color: #007bff;
         }
         #imageCanvas {
-            display: none; /* Hide canvas initially */
+            display: block;
+            margin-top: 20px;
         }
         #downloadButton {
             display: none; /* Hide download button initially */
@@ -254,93 +255,45 @@
                 flag.classList.remove('selected');
             });
             document.getElementById(language).classList.add('selected');
-            translatePage(); // Translate static texts
-            fetchTopMovies(); // Re-fetch movies to update the overview text
+            translatePage(); // Translate the page immediately
+            fetchTopMovies(); // Fetch movies again to update overviews
         }
 
-        document.getElementById('en').addEventListener('click', () => changeLanguage('en'));
-        document.getElementById('es').addEventListener('click', () => changeLanguage('es'));
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('generateImageMatrix').addEventListener('click', generateImageMatrix);
+            document.querySelectorAll('.language-flag').forEach(flag => {
+                flag.addEventListener('click', () => changeLanguage(flag.getAttribute('data-lang')));
+            });
 
-        // Fetch movies on page load
-        fetchTopMovies();
+            changeLanguage('en'); // Default language to English
+        });
 
-        async function generateImageMatrix() {
+        function generateImageMatrix() {
+            const items = document.querySelectorAll('.item img');
+            if (items.length === 0) return;
+
             const canvas = document.getElementById('imageCanvas');
             const ctx = canvas.getContext('2d');
-            const response = await fetch(endpointUrl);
-            const items = await response.json();
 
-            if (items.length < 3) {
-                alert('Not enough data to generate the image matrix.');
-                return;
-            }
+            const rows = Math.ceil(items.length / 3);
+            const imageWidth = 300; // Assuming each image is 300px wide
+            const imageHeight = 450; // Assuming each image is 450px tall
 
-            const imageUrls = [ 
-                'titleimagemovies.png', 
-                items[0].image_url, 
-                items[1].image_url, 
-                items[2].image_url 
-            ];
+            canvas.width = imageWidth * 3;
+            canvas.height = imageHeight * rows;
 
-            const imgPromises = imageUrls.map(url => new Promise((resolve, reject) => {
-                const img = new Image();
-                img.onload = () => resolve(img);
-                img.onerror = reject;
-                img.src = url;
-            }));
+            items.forEach((item, index) => {
+                const row = Math.floor(index / 3);
+                const col = index % 3;
+                const x = col * imageWidth;
+                const y = row * imageHeight;
+                ctx.drawImage(item, x, y, imageWidth, imageHeight);
+            });
 
-            try {
-                const images = await Promise.all(imgPromises);
-
-                canvas.width = 800;
-                canvas.height = 800;
-                
-                const cellWidth = canvas.width / 2;
-                const cellHeight = canvas.height / 2;
-
-                images.forEach((img, index) => {
-                    const x = (index % 2) * cellWidth;
-                    const y = Math.floor(index / 2) * cellHeight;
-                    ctx.drawImage(img, x, y, cellWidth, cellHeight);
-                });
-				
-				function formatDate(date) {
-					const day = date.getDate();
-					const month = date.getMonth() + 1; // Months are zero-based
-					const year = date.getFullYear();
-					return `${day}/${month}/${year}`;
-				}
-				const getCurrentDate = () => new Date(); // Ensure this returns a Date object
-				const watermarkText = formatDate(getCurrentDate());
-
-                // Add watermark
-                ctx.font = '50px Arial'; // Larger font size
-                ctx.fillStyle = 'white'; // White color
-                ctx.textAlign = 'center'; // Center text horizontally
-                ctx.textBaseline = 'middle'; // Center text vertically
-
-                // Calculate position to place text in the left 1/4 of the image
-                const xPosition = canvas.width / 4; // X position is in the left 1/4 of the image
-                const yPosition = canvas.height / 2 - canvas.height / 8; // Y position is 1/8 above the vertical center
-
-                // Add watermark text to the canvas
-                ctx.fillText(watermarkText, xPosition, yPosition);
-
-                canvas.style.display = 'block';
-
-                // Show the download button
-                const downloadButton = document.getElementById('downloadButton');
-                downloadButton.style.display = 'block';
-                
-                // Convert canvas to data URL and set it as the href of the download button
-                downloadButton.href = canvas.toDataURL('image/png');
-                
-            } catch (error) {
-                console.error('Error generating image matrix:', error);
-            }
+            const downloadButton = document.getElementById('downloadButton');
+            downloadButton.style.display = 'inline-block';
+            downloadButton.href = canvas.toDataURL('image/png');
         }
-
-        document.getElementById('generateImageMatrix').addEventListener('click', generateImageMatrix);
     </script>
 </body>
 </html>
