@@ -50,6 +50,9 @@
         .item-info p {
             margin: 5px 0;
         }
+        .item-info p strong {
+            font-weight: bold;
+        }
         .item-info a {
             color: #007bff;
             text-decoration: none;
@@ -73,14 +76,8 @@
         .language-selector img:hover {
             border-color: #007bff;
         }
-        .homepage-link {
-            display: inline-block;
-            text-decoration: none;
-            color: #007bff;
-            font-weight: bold;
-        }
-        .homepage-link:hover {
-            text-decoration: underline;
+        .language-flag.selected {
+            border-color: #007bff;
         }
         @media (max-width: 768px) {
             .item {
@@ -92,8 +89,26 @@
                 margin-bottom: 10px;
             }
         }
-        .language-flag.selected {
-            border-color: #007bff;
+        footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+            margin-top: 20px;
+        }
+        footer .left {
+            flex: 1;
+        }
+        footer .right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        footer img {
+            max-height: 30px; /* Adjust max height */
+            height: auto;
         }
     </style>
 </head>
@@ -107,11 +122,19 @@
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
         </div>
         <div id="items"></div>
-        <!-- Homepage Link -->
-        <div style="text-align: center; margin-top: 20px;">
+    </div>
+
+    <footer>
+        <div class="left">
             <a href="index.html" class="homepage-link" data-translate-key="Homepage">Homepage</a>
         </div>
-    </div>
+        <div class="right">
+            <strong>Source:</strong>
+            <a href="https://open.spotify.com/" target="_blank">
+                <img src="spotifylogo.png" alt="Spotify Logo">
+            </a>
+        </div>
+    </footer>
 
     <script>
         const translateApiKey = 'YOUR_TRANSLATE_API_KEY'; // Replace with your Translate API key
@@ -127,7 +150,7 @@
             es: {
                 artist: "Artista",
                 releaseDate: "Fecha publicación",
-                listenOnSpotify: "Escúcha en Spotify",
+                listenOnSpotify: "Escucha en Spotify",
                 homepage: "Inicio",
                 totalTracks: "Pistas"
             }
@@ -164,9 +187,9 @@
                         <img src="${imageUrl}" alt="${title}">
                         <div class="item-info">
                             <h2>${title}</h2>
-                            <p>${translations[lang].artist}: ${artist}</p>
-                            <p>${translations[lang].releaseDate}: ${releaseDate}</p>
-                            <p>${translations[lang].totalTracks}: ${totalTracks}</p>
+                            <p><strong>${translations[lang].artist}:</strong> ${artist}</p>
+                            <p><strong>${translations[lang].releaseDate}:</strong> ${releaseDate}</p>
+                            <p><strong>${translations[lang].totalTracks}:</strong> ${totalTracks}</p>
                             <p><a href="${spotifyUrl}" target="_blank">${translations[lang].listenOnSpotify}</a></p>
                         </div>
                     </div>
@@ -186,10 +209,6 @@
             });
 
             document.getElementById(language).classList.add('selected');
-
-            document.querySelectorAll('.homepage-link').forEach(element => {
-                element.innerText = translations[language].homepage;
-            });
 
             fetchContent(language);
         }
