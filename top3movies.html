@@ -185,6 +185,10 @@
             });
         }
 
+        function capitalizeGenres(genres) {
+            return genres.split(',').map(genre => genre.trim().charAt(0).toUpperCase() + genre.trim().slice(1)).join(', ');
+        }
+
         function getCurrentDate() {
             const date = new Date();
             const year = date.getFullYear();
@@ -193,7 +197,7 @@
             return `${year}${month}${day}`;
         }
 
-        const endpointUrl = `https://rmanfretan.pythonanywhere.com/top3movies/${getCurrentDate()}`;
+        const endpointUrl = `https://rmanfretan.pythonanywhere.com/top3moviesv2/${getCurrentDate()}`;
 
         async function fetchTopMovies() {
             const itemsContainer = document.getElementById('items');
@@ -211,7 +215,7 @@
                     if (seenMovies.has(item.title)) return; // Skip if already processed
                     seenMovies.add(item.title); // Mark movie as processed
 
-                    const { title, overview, overview_es, release_date, genres, image_url, link_url, rating, trailer_url, providers } = item;
+                    const { title, overview, overview_es, release_date, genres, genres_es, image_url, link_url, rating, trailer_url, providers } = item;
                     const providersText = providers && providers.length > 0 ? `Available on: ${providers.join(', ')}` : '';
 
                     itemsContainer.innerHTML += `
@@ -221,7 +225,7 @@
                                 <h2 data-translate-key="${title}">${title}</h2>
                                 <p>${currentLanguage === 'es' ? overview_es : overview}</p>
                                 <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
-                                <p><strong data-translate-key="Genre">Genre:</strong> ${genres}</p>
+                                <p><strong data-translate-key="Genre">Genre:</strong> ${currentLanguage === 'es' ? capitalizeGenres(genres_es) : capitalizeGenres(genres)}</p>
                                 <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
                                 ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
                                 ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
@@ -245,14 +249,14 @@
             });
             document.getElementById(language).classList.add('selected');
             translatePage(); // Translate static texts
-            fetchTopMovies(); // Re-fetch movies to update the overview text
+            fetchTopMovies(); // Fetch and display top movies with the new language
         }
 
-        document.getElementById('en').addEventListener('click', () => changeLanguage('en'));
-        document.getElementById('es').addEventListener('click', () => changeLanguage('es'));
-
-        // Initial fetch of top movies
-        fetchTopMovies();
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('es').addEventListener('click', () => changeLanguage('es'));
+            document.getElementById('en').addEventListener('click', () => changeLanguage('en'));
+            fetchTopMovies();
+        });
     </script>
 </body>
 </html>
