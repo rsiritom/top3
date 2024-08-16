@@ -266,7 +266,7 @@
         document.querySelector('.share-button img').addEventListener('click', () => {
             if (navigator.share) {
                 navigator.share({
-                    title: 'Top 3 Series',
+                    title: 'Look at the Top 3 Series for today',
                     url: window.location.href
                 }).then(() => {
                     console.log('Thanks for sharing!');
