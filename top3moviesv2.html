@@ -82,6 +82,22 @@
         .homepage-link:hover {
             text-decoration: underline;
         }
+        .share-button {
+            display: inline-block;
+            margin: 10px 0;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+        }
+        .share-button:hover {
+            background-color: #0056b3;
+        }
         footer {
             display: flex;
             justify-content: space-between;
@@ -116,14 +132,6 @@
         .language-flag.selected {
             border-color: #007bff;
         }
-        #imageCanvas {
-            display: block;
-            margin-top: 20px;
-        }
-        #downloadButton {
-            display: none; /* Hide download button initially */
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
@@ -136,9 +144,7 @@
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
         </div>
         <div id="items"></div>
-        <button id="generateImageMatrix">Generate Image Matrix</button>
-        <a id="downloadButton" download="top3movies_image.png" href="#">Download</a>
-        <canvas id="imageCanvas"></canvas>
+        <button class="share-button" id="share-button">Share</button>
     </div>
 
     <footer>
@@ -196,6 +202,10 @@
             });
         }
 
+        function capitalizeGenres(genres) {
+            return genres.split(',').map(genre => genre.trim().charAt(0).toUpperCase() + genre.trim().slice(1)).join(', ');
+        }
+
         function getCurrentDate() {
             const date = new Date();
             const year = date.getFullYear();
@@ -204,7 +214,7 @@
             return `${year}${month}${day}`;
         }
 
-        const endpointUrl = `https://rmanfretan.pythonanywhere.com/top3movies/${getCurrentDate()}`;
+        const endpointUrl = `https://rmanfretan.pythonanywhere.com/top3moviesv2/${getCurrentDate()}`;
 
         async function fetchTopMovies() {
             const itemsContainer = document.getElementById('items');
@@ -222,7 +232,7 @@
                     if (seenMovies.has(item.title)) return; // Skip if already processed
                     seenMovies.add(item.title); // Mark movie as processed
 
-                    const { title, overview, overview_es, release_date, genres, image_url, link_url, rating, trailer_url, providers } = item;
+                    const { title, overview, overview_es, release_date, genres, genres_es, image_url, link_url, rating, trailer_url, providers } = item;
                     const providersText = providers && providers.length > 0 ? `Available on: ${providers.join(', ')}` : '';
 
                     itemsContainer.innerHTML += `
@@ -232,7 +242,7 @@
                                 <h2 data-translate-key="${title}">${title}</h2>
                                 <p>${currentLanguage === 'es' ? overview_es : overview}</p>
                                 <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
-                                <p><strong data-translate-key="Genre">Genre:</strong> ${genres}</p>
+                                <p><strong data-translate-key="Genre">Genre:</strong> ${currentLanguage === 'es' ? capitalizeGenres(genres_es) : capitalizeGenres(genres)}</p>
                                 <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
                                 ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
                                 ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
@@ -242,58 +252,47 @@
                     `;
                 });
 
-                translatePage(); // Translate the page content after fetching
+                translatePage(); // Translate the page after fetching data
             } catch (error) {
-                console.error('Error fetching data:', error);
-                itemsContainer.innerHTML = '<p>Error fetching data. Please try again later.</p>';
+                console.error('Error fetching top movies:', error);
+                itemsContainer.innerHTML = '<p>Error loading top movies. Please try again later.</p>';
             }
         }
 
-        function changeLanguage(language) {
-            currentLanguage = language;
-            document.querySelectorAll('.language-flag').forEach(flag => {
-                flag.classList.remove('selected');
-            });
-            document.getElementById(language).classList.add('selected');
-            translatePage(); // Translate the page immediately
-            fetchTopMovies(); // Fetch movies again to update overviews
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('generateImageMatrix').addEventListener('click', generateImageMatrix);
             document.querySelectorAll('.language-flag').forEach(flag => {
-                flag.addEventListener('click', () => changeLanguage(flag.getAttribute('data-lang')));
+                flag.addEventListener('click', (event) => {
+                    const selectedLang = event.target.getAttribute('data-lang');
+                    if (selectedLang) {
+                        currentLanguage = selectedLang;
+                        document.querySelectorAll('.language-flag').forEach(flag => flag.classList.remove('selected'));
+                        event.target.classList.add('selected');
+                        fetchTopMovies();
+                    }
+                });
             });
 
-            changeLanguage('en'); // Default language to English
+            fetchTopMovies();
         });
 
-        function generateImageMatrix() {
-            const items = document.querySelectorAll('.item img');
-            if (items.length === 0) return;
+        document.getElementById('share-button').addEventListener('click', async () => {
+            const date = new Date();
+            const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+            const shareText = `Look at the 3 top movies for ${formattedDate}`;
+            
+            try {
+                await navigator.share({
+                    title: document.title,
+                    text: shareText,
+                    url: window.location.href
+                });
+                console.log('Successfully shared');
+            } catch (error) {
+                console.error('Error sharing:', error);
+            }
+        });
 
-            const canvas = document.getElementById('imageCanvas');
-            const ctx = canvas.getContext('2d');
-
-            const rows = Math.ceil(items.length / 3);
-            const imageWidth = 300; // Assuming each image is 300px wide
-            const imageHeight = 450; // Assuming each image is 450px tall
-
-            canvas.width = imageWidth * 3;
-            canvas.height = imageHeight * rows;
-
-            items.forEach((item, index) => {
-                const row = Math.floor(index / 3);
-                const col = index % 3;
-                const x = col * imageWidth;
-                const y = row * imageHeight;
-                ctx.drawImage(item, x, y, imageWidth, imageHeight);
-            });
-
-            const downloadButton = document.getElementById('downloadButton');
-            downloadButton.style.display = 'inline-block';
-            downloadButton.href = canvas.toDataURL('image/png');
-        }
+        translatePage(); // Translate the page on load
     </script>
 </body>
 </html>
