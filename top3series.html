@@ -60,6 +60,10 @@
         .language-selector {
             text-align: center;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
         .language-selector img {
             cursor: pointer;
@@ -73,14 +77,17 @@
         .language-selector img:hover {
             border-color: #007bff;
         }
-        .homepage-link {
-            display: inline-block;
-            text-decoration: none;
-            color: #007bff;
-            font-weight: bold;
+        .language-flag.selected {
+            border-color: #007bff;
         }
-        .homepage-link:hover {
-            text-decoration: underline;
+        .share-button img {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .share-button img:hover {
+            opacity: 0.7;
         }
         footer {
             display: flex;
@@ -113,9 +120,6 @@
                 margin-bottom: 10px;
             }
         }
-        .language-flag.selected {
-            border-color: #007bff;
-        }
     </style>
 </head>
 <body>
@@ -126,6 +130,9 @@
         <div class="language-selector">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
+            <a href="#" class="share-button">
+                <img src="share.png" alt="Share">
+            </a>
         </div>
         <div id="items"></div>
     </div>
@@ -197,7 +204,7 @@
             return `${year}${month}${day}`;
         }
 
-        const endpointUrl = `https://rmanfretan.pythonanywhere.com/top3series/${getCurrentDate()}`;
+        const endpointUrl = `https://rmanfretan.pythonanywhere.com/top3seriesv2/${getCurrentDate()}`;
 
         async function fetchTopSeries() {
             const itemsContainer = document.getElementById('items');
@@ -215,7 +222,7 @@
                     if (seenSeries.has(item.title)) return; // Skip if already processed
                     seenSeries.add(item.title); // Mark series as processed
 
-                    const { title, overview, overview_es, release_date, genres, image_url, link_url, rating, trailer_url, providers } = item;
+                    const { title, overview, overview_es, release_date, genres, genres_es, image_url, link_url, rating, trailer_url, providers } = item;
                     const providersText = providers && providers.length > 0 ? `Available on: ${providers.join(', ')}` : '';
 
                     itemsContainer.innerHTML += `
@@ -225,7 +232,7 @@
                                 <h2 data-translate-key="${title}">${title}</h2>
                                 <p>${currentLanguage === 'es' ? overview_es : overview}</p>
                                 <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
-                                <p><strong data-translate-key="Genre">Genre:</strong> ${genres}</p>
+                                <p><strong data-translate-key="Genre">Genre:</strong> ${currentLanguage === 'es' ? genres_es : genres}</p>
                                 <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
                                 ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
                                 ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
@@ -238,28 +245,41 @@
                 translatePage(); // Translate the page content after fetching
             } catch (error) {
                 console.error('Error fetching data:', error);
-                itemsContainer.innerHTML = '<p>Error fetching data. Please try again later.</p>';
             }
         }
 
-        function changeLanguage(language) {
+        function switchLanguage(language) {
             currentLanguage = language;
             document.querySelectorAll('.language-flag').forEach(flag => {
                 flag.classList.remove('selected');
             });
             document.getElementById(language).classList.add('selected');
-            translatePage(); // Translate static texts
-            fetchTopSeries(); // Re-fetch series to update the overview text
+            fetchTopSeries(); // Refetch and translate the series information
         }
 
-        document.getElementById('en').addEventListener('click', () => changeLanguage('en'));
-        document.getElementById('es').addEventListener('click', () => changeLanguage('es'));
+        document.querySelectorAll('.language-flag').forEach(flag => {
+            flag.addEventListener('click', () => {
+                switchLanguage(flag.getAttribute('data-lang'));
+            });
+        });
 
-        // Initial fetch and translation
-        fetchTopSeries();
-        translatePage();
+        document.querySelector('.share-button img').addEventListener('click', () => {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Top 3 Series',
+                    url: window.location.href
+                }).then(() => {
+                    console.log('Thanks for sharing!');
+                }).catch(console.error);
+            } else {
+                alert('Sharing is not supported in your browser.');
+            }
+        });
+
+        window.addEventListener('load', () => {
+            translatePage(); // Translate the static content
+            fetchTopSeries(); // Fetch and display the series items
+        });
     </script>
 </body>
 </html>
-
-
