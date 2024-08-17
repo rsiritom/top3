@@ -244,15 +244,18 @@
                         </div>
                     `;
                 });
+
                 // Reapply translations after updating content
                 translatePage();
 
                 // Prepare the WhatsApp message
-                const message = items.slice(0, 3).map(item => {
-                    const { title, overview, overview_es } = item;
-                    const description = currentLanguage === 'es' ? overview_es : overview;
-                    return `${title}: ${description}`;
-                }).join('\n\n');
+                const message = `*Here you have the top 3 movies for today*\n\n` +
+                    items.slice(0, 3).map(item => {
+                        const { title, overview, overview_es } = item;
+                        const description = currentLanguage === 'es' ? overview_es : overview;
+                        return `*${title}*: ${description}`;
+                    }).join('\n\n') +
+                    `\n\nMore info at https://thetop3.info`;
 
                 const whatsappShareButton = document.querySelector('.whatsapp-share-button');
                 whatsappShareButton.addEventListener('click', () => {
@@ -296,5 +299,3 @@
     </script>
 </body>
 </html>
-
-               
