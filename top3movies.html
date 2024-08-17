@@ -245,49 +245,46 @@
                     `;
                 });
 
-                translatePage(); // Translate the page after fetching data
+                // Reapply translations after updating content
+                translatePage();
+
             } catch (error) {
                 console.error('Error fetching top movies:', error);
-                itemsContainer.innerHTML = `<p>Error fetching data. Please try again later.</p>`;
+                itemsContainer.innerHTML = '<p>Error loading top movies. Please try again later.</p>';
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.language-flag').forEach(flag => {
+            const languageFlags = document.querySelectorAll('.language-flag');
+
+            languageFlags.forEach(flag => {
                 flag.addEventListener('click', () => {
                     currentLanguage = flag.getAttribute('data-lang');
-                    document.querySelectorAll('.language-flag').forEach(f => f.classList.remove('selected'));
+                    languageFlags.forEach(f => f.classList.remove('selected'));
                     flag.classList.add('selected');
-                    fetchTopMovies(); // Re-fetch movies to update the language
+                    translatePage();
+                    fetchTopMovies(); // Reload movies with the new language
                 });
             });
 
-            // Initial fetch
+            // Load top movies on initial page load
             fetchTopMovies();
 
-            // Share button functionality
-            document.querySelector('.share-button img').addEventListener('click', () => {
-                const shareText = translations["Top 3 Movies"][currentLanguage];
-                const shareUrl = window.location.href;
-                const shareMessage = `${shareText}: ${shareUrl}`;
-                if (navigator.share) {
-                    navigator.share({
-                        title: shareText,
-                        url: shareUrl
-                    }).then(() => {
-                        console.log('Thanks for sharing!');
-                    }).catch(console.error);
-                } else {
-                    alert(`Copy this link to share: ${shareUrl}`);
-                }
+            const shareButton = document.querySelector('.share-button');
+            const whatsappShareButton = document.querySelector('.whatsapp-share-button');
+
+            shareButton.addEventListener('click', () => {
+                const shareData = {
+                    title: document.title,
+                    text: 'Check out the top 3 movies!',
+                    url: window.location.href
+                };
+                navigator.share(shareData).catch(console.error);
             });
 
-            // WhatsApp share button functionality
-            document.querySelector('.whatsapp-share-button img').addEventListener('click', () => {
-                const shareText = translations["Top 3 Movies"][currentLanguage];
-                const shareUrl = window.location.href;
-                const shareMessage = `${shareText}: ${shareUrl}`;
-                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareMessage)}`;
+            whatsappShareButton.addEventListener('click', () => {
+                const text = `Check out the top 3 movies! ${window.location.href} \nImage: ${document.querySelector('.banner img').src}`;
+                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
                 window.open(whatsappUrl, '_blank');
             });
         });
