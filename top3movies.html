@@ -46,6 +46,7 @@
         }
         .item-info h2 {
             margin: 0 0 10px 0;
+            font-weight: bold;
         }
         .item-info p {
             margin: 5px 0;
@@ -248,52 +249,43 @@
                 // Reapply translations after updating content
                 translatePage();
 
-                // Prepare the WhatsApp message
-                const message = `*Here you have the top 3 movies for today*\n\n` +
-                    items.slice(0, 3).map(item => {
-                        const { title, overview, overview_es } = item;
-                        const description = currentLanguage === 'es' ? overview_es : overview;
-                        return `*${title}*: ${description}`;
-                    }).join('\n\n') +
-                    `\n\nMore info at https://thetop3.info`;
+                // Prepare the WhatsApp message with emojis
+                const message = `🎬 *Here you have the top 3 movies for today* 🍿\n\n` +
+                                `1️⃣ *Movie 1:* 🎥\n` +
+                                `   - *Release Date:* YYYY-MM-DD\n` +
+                                `   - *Genre:* Genre\n` +
+                                `   - *Rating:* 8.5/10\n` +
+                                `   - *Learn More:* [Link](#)\n\n` +
+                                `2️⃣ *Movie 2:* 🎬\n` +
+                                `   - *Release Date:* YYYY-MM-DD\n` +
+                                `   - *Genre:* Genre\n` +
+                                `   - *Rating:* 9/10\n` +
+                                `   - *Learn More:* [Link](#)\n\n` +
+                                `3️⃣ *Movie 3:* 🎥\n` +
+                                `   - *Release Date:* YYYY-MM-DD\n` +
+                                `   - *Genre:* Genre\n` +
+                                `   - *Rating:* 7.5/10\n` +
+                                `   - *Learn More:* [Link](#)\n\n` +
+                                `🌟 More info at https://thetop3.info`;
 
-                const whatsappShareButton = document.querySelector('.whatsapp-share-button');
-                whatsappShareButton.addEventListener('click', () => {
-                    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-                    window.open(whatsappUrl, '_blank');
-                });
+                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+                document.querySelector('.whatsapp-share-button').href = whatsappUrl;
 
             } catch (error) {
                 console.error('Error fetching top movies:', error);
-                itemsContainer.innerHTML = '<p>Error loading top movies. Please try again later.</p>';
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const languageFlags = document.querySelectorAll('.language-flag');
+        // Initial fetch
+        fetchTopMovies();
 
-            languageFlags.forEach(flag => {
-                flag.addEventListener('click', () => {
-                    currentLanguage = flag.getAttribute('data-lang');
-                    languageFlags.forEach(f => f.classList.remove('selected'));
-                    flag.classList.add('selected');
-                    translatePage();
-                    fetchTopMovies(); // Reload movies with the new language
-                });
-            });
-
-            // Load top movies on initial page load
-            fetchTopMovies();
-
-            const shareButton = document.querySelector('.share-button');
-
-            shareButton.addEventListener('click', () => {
-                const shareData = {
-                    title: document.title,
-                    text: 'Check out the top 3 movies!',
-                    url: window.location.href
-                };
-                navigator.share(shareData).catch(console.error);
+        // Language selector functionality
+        document.querySelectorAll('.language-flag').forEach(flag => {
+            flag.addEventListener('click', (event) => {
+                const selectedLanguage = event.target.getAttribute('data-lang');
+                currentLanguage = selectedLanguage;
+                translatePage();
+                fetchTopMovies(); // Re-fetch movies to apply language changes
             });
         });
     </script>
