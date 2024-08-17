@@ -46,7 +46,6 @@
         }
         .item-info h2 {
             margin: 0 0 10px 0;
-            font-weight: bold;
         }
         .item-info p {
             margin: 5px 0;
@@ -231,61 +230,68 @@
 
                     itemsContainer.innerHTML += `
                         <div class="item">
-                            <img src="${image_url}" alt="${title}">
+                            <img src="${image_url || 'sample-image-url.jpg'}" alt="${title}">
                             <div class="item-info">
-                                <h2 data-translate-key="${title}">${title}</h2>
+                                <h2 data-translate-key="${title}"><strong>${title}</strong></h2>
                                 <p>${currentLanguage === 'es' ? overview_es : overview}</p>
                                 <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
                                 <p><strong data-translate-key="Genre">Genre:</strong> ${currentLanguage === 'es' ? capitalizeGenres(genres_es) : capitalizeGenres(genres)}</p>
                                 <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
-                                ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
-                                ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
-                                <p><a href="${link_url}" target="_blank" data-translate-key="Learn More">Learn More</a></p>
+                                ${providersText ? `<p>${providersText}</p>` : ''}
+                                <a href="${link_url}" target="_blank" data-translate-key="Learn More">Learn More</a>
                             </div>
                         </div>
                     `;
                 });
 
-                // Reapply translations after updating content
-                translatePage();
+                const whatsappShareButton = document.querySelector('.whatsapp-share-button');
+                const message = 
+                    `*Here you have the top 3 movies for today* 🍿\n\n` +
+                    `1️⃣ *${items[0]?.title || 'Movie 1'}:* 🎥\n` +
+                    `   ${currentLanguage === 'es' ? (items[0]?.overview_es || 'Description') : (items[0]?.overview || 'Description')}\n\n` +
+                    `2️⃣ *${items[1]?.title || 'Movie 2'}:* 🎬\n` +
+                    `   ${currentLanguage === 'es' ? (items[1]?.overview_es || 'Description') : (items[1]?.overview || 'Description')}\n\n` +
+                    `3️⃣ *${items[2]?.title || 'Movie 3'}:* 🎥\n` +
+                    `   ${currentLanguage === 'es' ? (items[2]?.overview_es || 'Description') : (items[2]?.overview || 'Description')}\n\n` +
+                    `🌟 More info at https://thetop3.info`;
 
-                // Prepare the WhatsApp message with emojis
-                const message = `🎬 *Here you have the top 3 movies for today* 🍿\n\n` +
-                                `1️⃣ *Movie 1:* 🎥\n` +
-                                `   - *Release Date:* YYYY-MM-DD\n` +
-                                `   - *Genre:* Genre\n` +
-                                `   - *Rating:* 8.5/10\n` +
-                                `   - *Learn More:* [Link](#)\n\n` +
-                                `2️⃣ *Movie 2:* 🎬\n` +
-                                `   - *Release Date:* YYYY-MM-DD\n` +
-                                `   - *Genre:* Genre\n` +
-                                `   - *Rating:* 9/10\n` +
-                                `   - *Learn More:* [Link](#)\n\n` +
-                                `3️⃣ *Movie 3:* 🎥\n` +
-                                `   - *Release Date:* YYYY-MM-DD\n` +
-                                `   - *Genre:* Genre\n` +
-                                `   - *Rating:* 7.5/10\n` +
-                                `   - *Learn More:* [Link](#)\n\n` +
-                                `🌟 More info at https://thetop3.info`;
-
-                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-                document.querySelector('.whatsapp-share-button').href = whatsappUrl;
+                whatsappShareButton.addEventListener('click', () => {
+                    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                });
 
             } catch (error) {
                 console.error('Error fetching top movies:', error);
+                itemsContainer.innerHTML = '<p>Error loading top movies. Please try again later.</p>';
             }
         }
 
-        // Initial fetch
-        fetchTopMovies();
+        document.addEventListener('DOMContentLoaded', () => {
+            const languageFlags = document.querySelectorAll('.language-flag');
 
-        // Language selector functionality
-        document.querySelectorAll('.language-flag').forEach(flag => {
-            flag.addEventListener('click', (event) => {
-                const selectedLanguage = event.target.getAttribute('data-lang');
-                currentLanguage = selectedLanguage;
-                translatePage();
-                fetchTopMovies(); // Re-fetch movies to apply language changes
+            languageFlags.forEach(flag => {
+                flag.addEventListener('click', () => {
+                    currentLanguage = flag.getAttribute('data-lang');
+                    languageFlags.forEach(f => f.classList.remove('selected'));
+                    flag.classList.add('selected');
+                    translatePage();
+                    fetchTopMovies(); // Reload movies with the new language
+                });
+            });
+
+            // Load top movies on initial page load
+            fetchTopMovies();
+
+            const shareButton = document.querySelector('.share-button');
+            const whatsappShareButton = document.querySelector('.whatsapp-share-button');
+
+            shareButton.addEventListener('click', () => {
+                const shareData = {
+                    title: document.title,
+                    text: 'Check out the top 3 movies!',
+                    url: window.location.href
+                };
+                navigator.share(shareData).catch(console.error);
             });
         });
     </script>
