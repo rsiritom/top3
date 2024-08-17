@@ -60,6 +60,10 @@
         .language-selector {
             text-align: center;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
         .language-selector img {
             cursor: pointer;
@@ -73,14 +77,17 @@
         .language-selector img:hover {
             border-color: #007bff;
         }
-        .homepage-link {
-            display: inline-block;
-            text-decoration: none;
-            color: #007bff;
-            font-weight: bold;
+        .language-flag.selected {
+            border-color: #007bff;
         }
-        .homepage-link:hover {
-            text-decoration: underline;
+        .share-button img {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .share-button img:hover {
+            opacity: 0.7;
         }
         footer {
             display: flex;
@@ -113,9 +120,6 @@
                 margin-bottom: 10px;
             }
         }
-        .language-flag.selected {
-            border-color: #007bff;
-        }
     </style>
 </head>
 <body>
@@ -126,6 +130,12 @@
         <div class="language-selector">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
+            <a href="#" class="share-button">
+                <img src="share.png" alt="Share">
+            </a>
+            <a href="#" class="whatsapp-share-button">
+                <img src="sharewhatsapp.png" alt="Share on WhatsApp">
+            </a>
         </div>
         <div id="items"></div>
     </div>
@@ -235,28 +245,27 @@
                     `;
                 });
 
-                translatePage(); // Translate the page content after fetching
+                translatePage(); // Translate the page after fetching data
             } catch (error) {
-                console.error('Error fetching data:', error);
-                itemsContainer.innerHTML = '<p>Error fetching data. Please try again later.</p>';
+                console.error('Error fetching top movies:', error);
+                itemsContainer.innerHTML = '<p>Error fetching top movies. Please try again later.</p>';
             }
         }
 
-        function changeLanguage(language) {
-            currentLanguage = language;
-            document.querySelectorAll('.language-flag').forEach(flag => {
-                flag.classList.remove('selected');
+        document.querySelectorAll('.language-flag').forEach(flag => {
+            flag.addEventListener('click', () => {
+                document.querySelectorAll('.language-flag').forEach(f => f.classList.remove('selected'));
+                flag.classList.add('selected');
+                currentLanguage = flag.dataset.lang;
+                translatePage();
+                fetchTopMovies(); // Re-fetch data to update language
             });
-            document.getElementById(language).classList.add('selected');
-            translatePage(); // Translate static texts
-            fetchTopMovies(); // Fetch and display top movies with the new language
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('es').addEventListener('click', () => changeLanguage('es'));
-            document.getElementById('en').addEventListener('click', () => changeLanguage('en'));
-            fetchTopMovies();
         });
+
+        // Initialize default language and fetch top movies
+        document.getElementById('en').classList.add('selected');
+        translatePage();
+        fetchTopMovies();
     </script>
 </body>
 </html>
