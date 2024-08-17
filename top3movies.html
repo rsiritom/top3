@@ -244,9 +244,21 @@
                         </div>
                     `;
                 });
-
                 // Reapply translations after updating content
                 translatePage();
+
+                // Prepare the WhatsApp message
+                const message = items.slice(0, 3).map(item => {
+                    const { title, overview, overview_es } = item;
+                    const description = currentLanguage === 'es' ? overview_es : overview;
+                    return `${title}: ${description}`;
+                }).join('\n\n');
+
+                const whatsappShareButton = document.querySelector('.whatsapp-share-button');
+                whatsappShareButton.addEventListener('click', () => {
+                    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                });
 
             } catch (error) {
                 console.error('Error fetching top movies:', error);
@@ -271,7 +283,6 @@
             fetchTopMovies();
 
             const shareButton = document.querySelector('.share-button');
-            const whatsappShareButton = document.querySelector('.whatsapp-share-button');
 
             shareButton.addEventListener('click', () => {
                 const shareData = {
@@ -281,13 +292,9 @@
                 };
                 navigator.share(shareData).catch(console.error);
             });
-
-            whatsappShareButton.addEventListener('click', () => {
-                const text = `Check out the top 3 movies! ${window.location.href} \nImage: ${document.querySelector('.banner img').src}`;
-                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-                window.open(whatsappUrl, '_blank');
-            });
         });
     </script>
 </body>
 </html>
+
+               
