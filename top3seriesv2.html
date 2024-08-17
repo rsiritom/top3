@@ -162,7 +162,7 @@
             },
             "Release Date": {
                 "en": "Release Date",
-                "es": "Fecha de publicación"
+                "es": "Fecha publicación"
             },
             "Genre": {
                 "en": "Genre",
@@ -170,9 +170,9 @@
             },
             "Rating": {
                 "en": "Rating",
-                "es": "Puntuación"
+                "es": "Valoración"
             },
-            "Rating": {
+            "Available on": {
                 "en": "Available on",
                 "es": "Disponible en"
             },
@@ -252,55 +252,54 @@
                     `;
                 });
 
-                translatePage(); // Translate the page content after loading items
-                updateShareButtons(); // Update share buttons with the fetched data
-
+                translatePage(); // Translate the page after fetching data
             } catch (error) {
-                console.error("Failed to fetch top series:", error);
-                itemsContainer.innerHTML = `<p>${currentLanguage === 'es' ? 'No se pudo cargar el contenido.' : 'Failed to load content.'}</p>`;
+                console.error('Error fetching top series:', error);
+                itemsContainer.innerHTML = '<p>Error loading top series. Please try again later.</p>';
             }
         }
 
-        function updateShareButtons() {
-            const baseUrl = 'https://rsiritom.github.io/top3/top3series.html';
-            const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '/');
-            const textToShare = `Look at the 3 top movies for ${currentDate}: ${baseUrl}`;
-            const topMoviesDetails = fetchedSeries.map((item, index) => `#${index + 1}: ${item.title}`).join(', ');
-            const fullShareText = `${textToShare} - ${topMoviesDetails}`;
-
-            document.querySelector('.share-button').addEventListener('click', function () {
-                if (navigator.share) {
-                    navigator.share({
-                        title: document.title,
-                        text: fullShareText,
-                        url: baseUrl
-                    }).then(() => console.log('Shared successfully'))
-                    .catch(error => console.log('Error sharing:', error));
-                } else {
-                    console.log('Web Share API not supported.');
-                }
-            });
-
-            document.querySelector('.whatsapp-share-button').addEventListener('click', function () {
-                const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullShareText)}`;
-                window.open(whatsappShareUrl, '_blank');
-            });
+        function getShareText() {
+            return `Here you have the top 3 series for today 📺\n\n${fetchedSeries.slice(0, 3).map((series, index) => {
+                return `${index + 1}️⃣ ${series.title}: 🎥\n   ${series.overview}\n\n`;
+            }).join('')}🌟 More info at https://rsiritom.github.io/top3/top3series.html`;
         }
 
-        function selectLanguage(lang) {
-            currentLanguage = lang;
-            translatePage();
-            fetchTopSeries(); // Re-fetch the series to update the text content based on selected language
-        }
-
-        document.querySelectorAll('.language-flag').forEach(flag => {
-            flag.addEventListener('click', function () {
-                const lang = this.getAttribute('data-lang');
-                selectLanguage(lang);
-            });
+        document.querySelector('.whatsapp-share-button img').addEventListener('click', () => {
+            const whatsappText = getShareText();
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+            window.open(whatsappUrl, '_blank');
         });
 
-        fetchTopSeries(); // Initial fetch when the page loads
+        document.querySelector('.share-button img').addEventListener('click', async () => {
+            const shareText = getShareText();
+            
+            try {
+                await navigator.share({
+                    title: document.title,
+                    text: shareText,
+                });
+                console.log('Successfully shared');
+            } catch (error) {
+                console.error('Error sharing:', error);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.language-flag').forEach(flag => {
+                flag.addEventListener('click', (event) => {
+                    const selectedLang = event.target.getAttribute('data-lang');
+                    if (selectedLang) {
+                        currentLanguage = selectedLang;
+                        document.querySelectorAll('.language-flag').forEach(flag => flag.classList.remove('selected'));
+                        event.target.classList.add('selected');
+                        fetchTopSeries();
+                    }
+                });
+            });
+
+            fetchTopSeries();
+        });
     </script>
 </body>
 </html>
