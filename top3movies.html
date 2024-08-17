@@ -80,13 +80,13 @@
         .language-flag.selected {
             border-color: #007bff;
         }
-        .share-button img {
+        .share-button img, .whatsapp-share-button img {
             width: 24px;
             height: 24px;
             cursor: pointer;
             transition: opacity 0.3s;
         }
-        .share-button img:hover {
+        .share-button img:hover, .whatsapp-share-button img:hover {
             opacity: 0.7;
         }
         footer {
@@ -248,24 +248,49 @@
                 translatePage(); // Translate the page after fetching data
             } catch (error) {
                 console.error('Error fetching top movies:', error);
-                itemsContainer.innerHTML = '<p>Error fetching top movies. Please try again later.</p>';
+                itemsContainer.innerHTML = `<p>Error fetching data. Please try again later.</p>`;
             }
         }
 
-        document.querySelectorAll('.language-flag').forEach(flag => {
-            flag.addEventListener('click', () => {
-                document.querySelectorAll('.language-flag').forEach(f => f.classList.remove('selected'));
-                flag.classList.add('selected');
-                currentLanguage = flag.dataset.lang;
-                translatePage();
-                fetchTopMovies(); // Re-fetch data to update language
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.language-flag').forEach(flag => {
+                flag.addEventListener('click', () => {
+                    currentLanguage = flag.getAttribute('data-lang');
+                    document.querySelectorAll('.language-flag').forEach(f => f.classList.remove('selected'));
+                    flag.classList.add('selected');
+                    fetchTopMovies(); // Re-fetch movies to update the language
+                });
+            });
+
+            // Initial fetch
+            fetchTopMovies();
+
+            // Share button functionality
+            document.querySelector('.share-button img').addEventListener('click', () => {
+                const shareText = translations["Top 3 Movies"][currentLanguage];
+                const shareUrl = window.location.href;
+                const shareMessage = `${shareText}: ${shareUrl}`;
+                if (navigator.share) {
+                    navigator.share({
+                        title: shareText,
+                        url: shareUrl
+                    }).then(() => {
+                        console.log('Thanks for sharing!');
+                    }).catch(console.error);
+                } else {
+                    alert(`Copy this link to share: ${shareUrl}`);
+                }
+            });
+
+            // WhatsApp share button functionality
+            document.querySelector('.whatsapp-share-button img').addEventListener('click', () => {
+                const shareText = translations["Top 3 Movies"][currentLanguage];
+                const shareUrl = window.location.href;
+                const shareMessage = `${shareText}: ${shareUrl}`;
+                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareMessage)}`;
+                window.open(whatsappUrl, '_blank');
             });
         });
-
-        // Initialize default language and fetch top movies
-        document.getElementById('en').classList.add('selected');
-        translatePage();
-        fetchTopMovies();
     </script>
 </body>
 </html>
