@@ -262,7 +262,7 @@
         function getShareText() {
             return `Here you have the top 3 series for today 📺\n\n${fetchedSeries.slice(0, 3).map((series, index) => {
                 return `${index + 1}️⃣ ${series.title}: 🎥\n   ${series.overview}\n\n`;
-            }).join('')}🌟 More info at https://rsiritom.github.io/top3/top3series.html`;
+            }).join('')}🌟 More info at https://thetop3.info/`;
         }
 
         document.querySelector('.whatsapp-share-button img').addEventListener('click', () => {
