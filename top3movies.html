@@ -259,14 +259,31 @@
             }
         }
 
-        document.querySelector('.whatsapp-share-button img').addEventListener('click', () => {
-            const whatsappText = `Here you have the top 3 movies for today 🍿\n\n${fetchedMovies.slice(0, 3).map((movie, index) => {
+        function getShareText() {
+            return `Here you have the top 3 movies for today 🍿\n\n${fetchedMovies.slice(0, 3).map((movie, index) => {
                 return `${index + 1}️⃣ ${movie.title}: 🎥\n   ${movie.overview}\n\n`;
             }).join('')}🌟 More info at https://thetop3.info`;
+        }
 
+        document.querySelector('.whatsapp-share-button img').addEventListener('click', () => {
+            const whatsappText = getShareText();
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
-
             window.open(whatsappUrl, '_blank');
+        });
+
+        document.querySelector('.share-button img').addEventListener('click', async () => {
+            const shareText = getShareText();
+            
+            try {
+                await navigator.share({
+                    title: document.title,
+                    text: shareText,
+                    url: window.location.href
+                });
+                console.log('Successfully shared');
+            } catch (error) {
+                console.error('Error sharing:', error);
+            }
         });
 
         document.addEventListener('DOMContentLoaded', () => {
