@@ -60,6 +60,10 @@
         .language-selector {
             text-align: center;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
         .language-selector img {
             cursor: pointer;
@@ -73,14 +77,19 @@
         .language-selector img:hover {
             border-color: #007bff;
         }
-        .homepage-link {
-            display: inline-block;
-            text-decoration: none;
-            color: #007bff;
-            font-weight: bold;
+        .language-flag.selected {
+            border-color: #007bff;
         }
-        .homepage-link:hover {
-            text-decoration: underline;
+        .share-button img,
+        .whatsapp-share-button img {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .share-button img:hover,
+        .whatsapp-share-button img:hover {
+            opacity: 0.7;
         }
         footer {
             display: flex;
@@ -113,9 +122,6 @@
                 margin-bottom: 10px;
             }
         }
-        .language-flag.selected {
-            border-color: #007bff;
-        }
     </style>
 </head>
 <body>
@@ -126,6 +132,12 @@
         <div class="language-selector">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
+            <a href="#" class="share-button">
+                <img src="share.png" alt="Share">
+            </a>
+            <a href="#" class="whatsapp-share-button">
+                <img src="sharewhatsapp.png" alt="Share on WhatsApp">
+            </a>
         </div>
         <div id="items"></div>
     </div>
@@ -160,12 +172,12 @@
                 "en": "Rating",
                 "es": "Puntuación"
             },
-            "Watch Trailer": {
-                "en": "Watch Trailer",
-                "es": "Ver tráiler"
+            "Rating": {
+                "en": "Available on",
+                "es": "Disponible en"
             },
-            "Learn more": {
-                "en": "Learn more",
+            "Learn More": {
+                "en": "Learn More",
                 "es": "Más detalles"
             },
             "Homepage": {
@@ -179,6 +191,7 @@
         };
 
         let currentLanguage = 'en'; // Default language
+        let fetchedSeries = []; // To store the fetched series
 
         function translatePage() {
             const elementsToTranslate = document.querySelectorAll('[data-translate-key]');
@@ -187,6 +200,10 @@
                 const translation = translations[key] && translations[key][currentLanguage] ? translations[key][currentLanguage] : key;
                 element.innerText = translation;
             });
+        }
+
+        function capitalizeGenres(genres) {
+            return genres.split(',').map(genre => genre.trim().charAt(0).toUpperCase() + genre.trim().slice(1)).join(', ');
         }
 
         function getCurrentDate() {
@@ -206,7 +223,7 @@
             try {
                 const response = await fetch(endpointUrl);
                 const items = await response.json();
-                console.log('Fetched items:', items); // Debugging line to check the data
+                fetchedSeries = items; // Store fetched series in a global variable
 
                 // Avoiding duplicate series entries
                 const seenSeries = new Set();
@@ -225,38 +242,65 @@
                                 <h2 data-translate-key="${title}">${title}</h2>
                                 <p>${currentLanguage === 'es' ? overview_es : overview}</p>
                                 <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
-                                <p><strong data-translate-key="Genre">Genre:</strong> ${currentLanguage === 'es' ? genres_es : genres}</p>
+                                <p><strong data-translate-key="Genre">Genre:</strong> ${currentLanguage === 'es' ? capitalizeGenres(genres_es) : capitalizeGenres(genres)}</p>
                                 <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
                                 ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
                                 ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
-                                <p><a href="${link_url}" target="_blank" data-translate-key="Learn more">Learn more</a></p>
+                                <p><a href="${link_url}" target="_blank" data-translate-key="Learn More">Learn More</a></p>
                             </div>
                         </div>
                     `;
                 });
 
-                translatePage(); // Translate the page content after fetching
+                translatePage(); // Translate the page content after loading items
+                updateShareButtons(); // Update share buttons with the fetched data
+
             } catch (error) {
-                console.error('Error fetching data:', error);
-                itemsContainer.innerHTML = '<p>Error fetching data. Please try again later.</p>';
+                console.error("Failed to fetch top series:", error);
+                itemsContainer.innerHTML = `<p>${currentLanguage === 'es' ? 'No se pudo cargar el contenido.' : 'Failed to load content.'}</p>`;
             }
         }
 
-        function changeLanguage(language) {
-            currentLanguage = language;
-            document.querySelectorAll('.language-flag').forEach(flag => {
-                flag.classList.remove('selected');
+        function updateShareButtons() {
+            const baseUrl = 'https://rsiritom.github.io/top3/top3series.html';
+            const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '/');
+            const textToShare = `Look at the 3 top movies for ${currentDate}: ${baseUrl}`;
+            const topMoviesDetails = fetchedSeries.map((item, index) => `#${index + 1}: ${item.title}`).join(', ');
+            const fullShareText = `${textToShare} - ${topMoviesDetails}`;
+
+            document.querySelector('.share-button').addEventListener('click', function () {
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.title,
+                        text: fullShareText,
+                        url: baseUrl
+                    }).then(() => console.log('Shared successfully'))
+                    .catch(error => console.log('Error sharing:', error));
+                } else {
+                    console.log('Web Share API not supported.');
+                }
             });
-            document.getElementById(language).classList.add('selected');
-            translatePage(); // Translate static texts
-            fetchTopSeries(); // Re-fetch series to update the overview text
+
+            document.querySelector('.whatsapp-share-button').addEventListener('click', function () {
+                const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullShareText)}`;
+                window.open(whatsappShareUrl, '_blank');
+            });
         }
 
-        document.getElementById('en').addEventListener('click', () => changeLanguage('en'));
-        document.getElementById('es').addEventListener('click', () => changeLanguage('es'));
+        function selectLanguage(lang) {
+            currentLanguage = lang;
+            translatePage();
+            fetchTopSeries(); // Re-fetch the series to update the text content based on selected language
+        }
 
-        // Initial load
-        fetchTopSeries();
+        document.querySelectorAll('.language-flag').forEach(flag => {
+            flag.addEventListener('click', function () {
+                const lang = this.getAttribute('data-lang');
+                selectLanguage(lang);
+            });
+        });
+
+        fetchTopSeries(); // Initial fetch when the page loads
     </script>
 </body>
 </html>
