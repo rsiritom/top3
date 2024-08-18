@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top 3 Songs</title>
+    <title>Trending Songs</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -28,6 +28,10 @@
             width: 80%;
             height: auto;
         }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
         .item {
             display: flex;
             flex-wrap: wrap;
@@ -49,6 +53,9 @@
         }
         .item-info p {
             margin: 5px 0;
+        }
+        .item-info p strong {
+            font-weight: bold;
         }
         .item-info a {
             color: #007bff;
@@ -73,6 +80,25 @@
         .language-selector img:hover {
             border-color: #007bff;
         }
+        .country-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .country-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #41e3cf;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .country-button.selected {
+            background-color: #12877b;
+        }
         .homepage-link {
             display: inline-block;
             text-decoration: none;
@@ -81,6 +107,27 @@
         }
         .homepage-link:hover {
             text-decoration: underline;
+        }
+        footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+            margin-top: 20px;
+        }
+        footer .left {
+            flex: 1;
+        }
+        footer .right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        footer img {
+            max-height: 30px; /* Ajusta la altura máxima al 60% del tamaño actual */
+            height: auto;
         }
         @media (max-width: 768px) {
             .item {
@@ -91,9 +138,6 @@
                 max-width: 100%;
                 margin-bottom: 10px;
             }
-        }
-        .language-flag.selected {
-            border-color: #007bff;
         }
     </style>
 </head>
@@ -106,12 +150,39 @@
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
         </div>
+        <div class="country-selector">
+            <button class="country-button" data-country="AR">Argentina</button>
+            <button class="country-button" data-country="BR">Brazil</button>
+            <button class="country-button" data-country="FR">France</button>
+            <button class="country-button" data-country="US">United States</button>
+            <button class="country-button" data-country="UY">Uruguay</button>
+			<button class="country-button" data-country="JP">Japan</button>
+			<button class="country-button" data-country="AU">Australia</button>
+			<button class="country-button" data-country="CA">Canada</button>
+			<button class="country-button" data-country="DE">Germany</button>
+			<button class="country-button" data-country="ES">Spain</button>
+			<button class="country-button" data-country="GB">United Kingdom</button>
+			<button class="country-button" data-country="IN">India</button>
+			<button class="country-button" data-country="IT">Italy</button>
+			<button class="country-button" data-country="KR">South Korea</button>
+			<button class="country-button" data-country="MX">Mexico</button>
+			<!-- Add more country buttons as needed -->
+        </div>
+        <p style="text-align: center;">Please select the country</p>
         <div id="songs"></div>
-        <!-- Homepage Link -->
-        <div style="text-align: center; margin-top: 20px;">
+    </div>
+
+    <footer>
+        <div class="left">
             <a href="index.html" class="homepage-link" data-translate-key="Homepage">Homepage</a>
         </div>
-    </div>
+        <div class="right">
+            <strong>Source:</strong>
+            <a href="https://open.spotify.com/" target="_blank">
+                <img src="spotifylogo.png" alt="Spotify Logo">
+            </a>
+        </div>
+    </footer>
 
     <script>
         const translations = {
@@ -137,76 +208,85 @@
             }
         };
 
-        async function fetchTopSongs(date) {
+        let currentSongs = [];
+
+        async function fetchTopSongs(date, country) {
             try {
                 const response = await fetch(`https://rmanfretan.pythonanywhere.com/top3songs/${date}`);
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error(`Network response was not ok: ${response.statusText}`);
                 }
                 const data = await response.json();
-                return data;
+                if (!data[country]) {
+                    throw new Error(`No data found for country code: ${country}`);
+                }
+                currentSongs = data[country];
+                displaySongs(currentSongs);
             } catch (error) {
                 console.error('There was a problem with the fetch operation:', error);
-                return [];
             }
         }
 
-        function renderItems(items) {
-            const itemsContainer = document.getElementById('songs');
-            itemsContainer.innerHTML = '';
-
-            items.forEach(item => {
-                const imageUrl = item.image_url;
-                const title = item.title;
-                const artist = item.artist;
-                const releaseDate = item.release_date;
-                const spotifyUrl = item.spotify_url;
-
-                itemsContainer.innerHTML += `
-                    <div class="item">
-                        <img src="${imageUrl}" alt="${title}">
-                        <div class="item-info">
-                            <h2>${title}</h2>
-                            <p data-translate-key="Artist">Artist: ${artist}</p>
-                            <p data-translate-key="Release Date">Release Date: ${releaseDate}</p>
-                            <p><a href="${spotifyUrl}" target="_blank" data-translate-key="Listen on Spotify">Listen on Spotify</a></p>
-                        </div>
+        function displaySongs(songs) {
+            const songsContainer = document.getElementById('songs');
+            songsContainer.innerHTML = '';
+            songs.forEach(song => {
+                const songItem = document.createElement('div');
+                songItem.classList.add('item');
+                songItem.innerHTML = `
+                    <img src="${song.image_url}" alt="${song.title}">
+                    <div class="item-info">
+                        <h2>${song.title}</h2>
+                        <p><strong data-translate-key="Artist">${translations["Artist"][getSelectedLanguage()]}:</strong> ${song.artist}</p>
+                        <p><strong data-translate-key="Release Date">${translations["Release Date"][getSelectedLanguage()]}:</strong> ${song.release_date}</p>
+                        <p><a href="${song.spotify_url}" target="_blank" data-translate-key="Listen on Spotify">${translations["Listen on Spotify"][getSelectedLanguage()]}</a></p>
                     </div>
                 `;
+                songsContainer.appendChild(songItem);
             });
         }
 
-        async function fetchContent() {
-            const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-            const songs = await fetchTopSongs(today);
-            renderItems(songs);
+        function getSelectedLanguage() {
+            return document.querySelector('.language-flag.selected')?.dataset.lang || 'en';
         }
 
-        function changeLanguage(language) {
-            document.querySelectorAll('.language-flag').forEach(flag => {
-                flag.classList.remove('selected');
+        document.querySelectorAll('.language-flag').forEach(flag => {
+            flag.addEventListener('click', () => {
+                document.querySelectorAll('.language-flag').forEach(flag => flag.classList.remove('selected'));
+                flag.classList.add('selected');
+                translatePage();
+                displaySongs(currentSongs);
             });
+        });
 
-            document.getElementById(language).classList.add('selected');
-
-            const elementsToTranslate = document.querySelectorAll('[data-translate-key]');
-            elementsToTranslate.forEach(element => {
+        function translatePage() {
+            document.querySelectorAll('[data-translate-key]').forEach(element => {
                 const key = element.getAttribute('data-translate-key');
-                const translation = translations[key] && translations[key][language];
-                if (translation) {
-                    element.innerText = translation;
-                }
+                element.textContent = translations[key][getSelectedLanguage()];
             });
         }
 
-        document.getElementById('en').addEventListener('click', () => changeLanguage('en'));
-        document.getElementById('es').addEventListener('click', () => changeLanguage('es'));
+        document.querySelectorAll('.country-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Deselect previously selected button
+                document.querySelectorAll('.country-button').forEach(btn => btn.classList.remove('selected'));
+                
+                // Select the clicked button
+                button.classList.add('selected');
+                
+                const country = button.dataset.country;
+				const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+        fetchTopSongs(date, country);
+    });
+});
 
-        // Preselect English language on page load
-        changeLanguage('en');
-
-        // Fetch content on page load
-        fetchContent();
+// Initial fetch if a country is selected by default
+document.addEventListener('DOMContentLoaded', () => {
+    const defaultButton = document.querySelector('.country-button');
+    if (defaultButton) {
+        defaultButton.click();
+    }
+});
     </script>
 </body>
 </html>
