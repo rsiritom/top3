@@ -130,6 +130,9 @@
             <img src="top3movies_banner.png" alt="Top 3 Movies">
         </div>
         <div class="language-selector">
+            <a href="index.html">
+                <img src="back.png" alt="Back" title="Back">
+            </a>
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
             <a href="#" class="share-button">
@@ -251,60 +254,68 @@
                         </div>
                     `;
                 });
-
-                translatePage(); // Translate the page after fetching data
+                translatePage(); // Translate the page after fetching and displaying content
             } catch (error) {
-                console.error('Error fetching top movies:', error);
-                itemsContainer.innerHTML = '<p>Error loading top movies. Please try again later.</p>';
+                console.error("Error fetching movies:", error);
             }
         }
 
-        function getShareText() {
-            return `Here you have the top 3 movies for today 🍿\n\n${fetchedMovies.slice(0, 3).map((movie, index) => {
-                return `${index + 1}️⃣ ${movie.title}: 🎥\n   ${movie.overview}\n\n`;
-            }).join('')}🌟 More info at https://thetop3.info`;
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            translatePage(); // Translate static texts
+            fetchTopMovies(); // Fetch and re-render items with the new language
         }
 
-        document.querySelector('.whatsapp-share-button img').addEventListener('click', () => {
-            const whatsappText = getShareText();
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+        const languageButtons = document.querySelectorAll('.language-selector img.language-flag');
+        languageButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const lang = button.getAttribute('data-lang');
+                setLanguage(lang);
+
+                // Update selected class
+                languageButtons.forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
+            });
+        });
+
+        // Share button functionality
+        const shareButton = document.querySelector('.share-button');
+        const whatsappButton = document.querySelector('.whatsapp-share-button');
+
+        shareButton.addEventListener('click', () => {
+            let shareText = `🎬 Top 3 Movies 🎬\n\n`;
+            fetchedMovies.forEach(movie => {
+                const title = movie.title;
+                const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
+                shareText += `*${title}*\n${overview}\n\n`;
+            });
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Top 3 Movies',
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                alert("Sharing is not supported on this browser.");
+            }
+        });
+
+        whatsappButton.addEventListener('click', () => {
+            let shareText = `🎬 Top 3 Movies 🎬\n\n`;
+            fetchedMovies.forEach(movie => {
+                const title = movie.title;
+                const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
+                shareText += `*${title}*\n${overview}\n\n`;
+            });
+
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
             window.open(whatsappUrl, '_blank');
         });
 
-        document.querySelector('.share-button img').addEventListener('click', async () => {
-            const shareText = getShareText();
-            
-            try {
-                if (navigator.share) {
-                    await navigator.share({
-                        title: document.title,
-                        text: shareText,
-                        url: window.location.href
-                    });
-                    console.log('Successfully shared');
-                } else {
-                    console.error('Share API not supported');
-                }
-            } catch (error) {
-                console.error('Error sharing:', error);
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.language-flag').forEach(flag => {
-                flag.addEventListener('click', (event) => {
-                    const selectedLang = event.target.getAttribute('data-lang');
-                    if (selectedLang) {
-                        currentLanguage = selectedLang;
-                        document.querySelectorAll('.language-flag').forEach(flag => flag.classList.remove('selected'));
-                        event.target.classList.add('selected');
-                        fetchTopMovies();
-                    }
-                });
-            });
-
-            fetchTopMovies();
-        });
+        window.onload = () => {
+            setLanguage(currentLanguage); // Set default language on load
+        };
     </script>
 </body>
 </html>
