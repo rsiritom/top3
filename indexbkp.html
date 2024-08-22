@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top 3 Streaming</title>
+    <title>Top 3 Streaming </title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,8 +11,10 @@
             padding: 0;
             text-align: center;
         }
-        h1 {
+        .banner {
             margin: 20px 0;
+            width: 100%;
+            max-width: 600px;
         }
         .table-container {
             display: flex;
@@ -25,6 +27,7 @@
             max-width: 30%;
             box-sizing: border-box;
             border: 1px solid #000;
+            overflow: hidden;
         }
         .cell a {
             display: block;
@@ -32,6 +35,7 @@
             height: 0;
             padding-bottom: 100%;
             position: relative;
+            transition: transform 0.3s ease-in-out;
         }
         .cell img {
             position: absolute;
@@ -40,6 +44,10 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.3s ease-in-out;
+        }
+        .cell:hover img {
+            transform: scale(1.1);
         }
         @media (max-width: 768px) {
             .cell {
@@ -56,18 +64,12 @@
     </style>
 </head>
 <body>
-    <!-- This is a comment -->
-    <h1>Top 3 Streaming</h1>
+    <img src="top3.png" alt="Top 3 Banner" class="banner">
     <div class="table-container">
-        <div class="cell"><a href="top3youtube.html"><img src="top3youtube.png" alt="YouTube"></a></div>
         <div class="cell"><a href="top3movies.html"><img src="top3movies.png" alt="Movies"></a></div>
-        <div class="cell"><a href="top3series.html"><img src="top3series.png" alt="Series"></a></div>
-        <div class="cell"><a href="top3albums.html"><img src="top3songs.png" alt="Albums"></a></div>
-        <div class="cell"><a href="top3songs.html"><img src="top3songs.png" alt="Songs"></a></div>
-        <div class="cell"><a href="top3podcasts.html"><img src="top3podcasts.png" alt="Podcasts"></a></div>
-        <div class="cell"><a href="top3audiobooks.html"><img src="top3audiobook.png" alt="Audiobooks"></a></div>
-        <div class="cell"><a href="top3games.html"><img src="top3games.png" alt="Games"></a></div>
-        <div class="cell"><a href="top3random.html"><img src="top3random.png" alt="Random"></a></div>
+        <div class="cell"><a href="top3seriesv2.html"><img src="top3series.png" alt="Series"></a></div>
+        <div class="cell"><a href="top3albums.html"><img src="top3albums.png" alt="Albums"></a></div>
+        <div class="cell"><a href="top3songsv2.html"><img src="top3songs.png" alt="Songs"></a></div>
     </div>
 </body>
 </html>
