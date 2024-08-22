@@ -11,10 +11,23 @@
             padding: 0;
             text-align: center;
         }
-        .banner {
-            margin: 20px 0;
+        .carousel {
+            position: relative;
+            margin: 20px auto;
             width: 100%;
             max-width: 600px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+        }
+        .carousel-inner {
+            display: flex;
+            transition: transform 1s ease-in-out;
+        }
+        .carousel img {
+            width: 100%;
+            height: auto;
+            display: block;
         }
         .table-container {
             display: grid;
@@ -63,12 +76,33 @@
     </style>
 </head>
 <body>
-    <img src="top3.png" alt="Top 3 Banner" class="banner">
+    <div class="carousel">
+        <div class="carousel-inner">
+            <img src="top3.png" alt="Top 3 Banner 1">
+            <img src="top3b.png" alt="Top 3 Banner 2">
+            <img src="top3c.png" alt="Top 3 Banner 3">
+            <img src="top3d.png" alt="Top 3 Banner 4">
+        </div>
+    </div>
+
     <div class="table-container">
         <div class="cell"><a href="top3movies.html"><img src="top3movies.png" alt="Movies"></a></div>
-        <div class="cell"><a href="top3seriesv2.html"><img src="top3series.png" alt="Series"></a></div>
+        <div class="cell"><a href="top3series.html"><img src="top3series.png" alt="Series"></a></div>
         <div class="cell"><a href="top3albums.html"><img src="top3albums.png" alt="Albums"></a></div>
         <div class="cell"><a href="top3songsv2.html"><img src="top3songs.png" alt="Songs"></a></div>
     </div>
+
+    <script>
+        const carouselInner = document.querySelector('.carousel-inner');
+        const images = carouselInner.children;
+        let index = 0;
+
+        function showNextImage() {
+            index = (index + 1) % images.length;
+            carouselInner.style.transform = `translateX(-${index * 100}%)`;
+        }
+
+        setInterval(showNextImage, 2000);
+    </script>
 </body>
 </html>
