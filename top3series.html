@@ -80,13 +80,15 @@
         .language-flag.selected {
             border-color: #007bff;
         }
-        .share-button img {
+        .share-button img,
+        .whatsapp-share-button img {
             width: 24px;
             height: 24px;
             cursor: pointer;
             transition: opacity 0.3s;
         }
-        .share-button img:hover {
+        .share-button img:hover,
+        .whatsapp-share-button img:hover {
             opacity: 0.7;
         }
         footer {
@@ -128,10 +130,16 @@
             <img src="top3series_banner.png" alt="Top 3 Series">
         </div>
         <div class="language-selector">
+            <a href="index.html" class="back-button">
+                <img src="back.png" alt="Back">
+            </a>
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
             <a href="#" class="share-button">
                 <img src="share.png" alt="Share">
+            </a>
+            <a href="#" class="whatsapp-share-button">
+                <img src="sharewhatsapp.png" alt="Share on WhatsApp">
             </a>
         </div>
         <div id="items"></div>
@@ -157,7 +165,7 @@
             },
             "Release Date": {
                 "en": "Release Date",
-                "es": "Fecha de publicación"
+                "es": "Fecha publicación"
             },
             "Genre": {
                 "en": "Genre",
@@ -165,14 +173,14 @@
             },
             "Rating": {
                 "en": "Rating",
-                "es": "Puntuación"
+                "es": "Valoración"
             },
-            "Watch Trailer": {
-                "en": "Watch Trailer",
-                "es": "Ver tráiler"
+            "Available on": {
+                "en": "Available on",
+                "es": "Disponible en"
             },
-            "Learn more": {
-                "en": "Learn more",
+            "Learn More": {
+                "en": "Learn More",
                 "es": "Más detalles"
             },
             "Homepage": {
@@ -186,6 +194,7 @@
         };
 
         let currentLanguage = 'en'; // Default language
+        let fetchedSeries = []; // To store the fetched series
 
         function translatePage() {
             const elementsToTranslate = document.querySelectorAll('[data-translate-key]');
@@ -194,6 +203,10 @@
                 const translation = translations[key] && translations[key][currentLanguage] ? translations[key][currentLanguage] : key;
                 element.innerText = translation;
             });
+        }
+
+        function capitalizeGenres(genres) {
+            return genres.split(',').map(genre => genre.trim().charAt(0).toUpperCase() + genre.trim().slice(1)).join(', ');
         }
 
         function getCurrentDate() {
@@ -213,7 +226,7 @@
             try {
                 const response = await fetch(endpointUrl);
                 const items = await response.json();
-                console.log('Fetched items:', items); // Debugging line to check the data
+                fetchedSeries = items; // Store fetched series in a global variable
 
                 // Avoiding duplicate series entries
                 const seenSeries = new Set();
@@ -232,53 +245,36 @@
                                 <h2 data-translate-key="${title}">${title}</h2>
                                 <p>${currentLanguage === 'es' ? overview_es : overview}</p>
                                 <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
-                                <p><strong data-translate-key="Genre">Genre:</strong> ${currentLanguage === 'es' ? genres_es : genres}</p>
+                                <p><strong data-translate-key="Genre">Genre:</strong> ${currentLanguage === 'es' ? capitalizeGenres(genres_es) : capitalizeGenres(genres)}</p>
                                 <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
                                 ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
                                 ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
-                                <p><a href="${link_url}" target="_blank" data-translate-key="Learn more">Learn more</a></p>
+                                <p><a href="${link_url}" target="_blank" data-translate-key="Learn More">Learn More</a></p>
                             </div>
                         </div>
                     `;
                 });
-
-                translatePage(); // Translate the page content after fetching
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('Error fetching top series:', error);
             }
         }
 
-        function switchLanguage(language) {
-            currentLanguage = language;
-            document.querySelectorAll('.language-flag').forEach(flag => {
-                flag.classList.remove('selected');
-            });
-            document.getElementById(language).classList.add('selected');
-            fetchTopSeries(); // Refetch and translate the series information
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            translatePage();
+            fetchTopSeries();
         }
 
         document.querySelectorAll('.language-flag').forEach(flag => {
             flag.addEventListener('click', () => {
-                switchLanguage(flag.getAttribute('data-lang'));
+                setLanguage(flag.getAttribute('data-lang'));
+                document.querySelectorAll('.language-flag').forEach(f => f.classList.remove('selected'));
+                flag.classList.add('selected');
             });
         });
 
-        document.querySelector('.share-button img').addEventListener('click', () => {
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Look at the Top 3 Series for today',
-                    url: window.location.href
-                }).then(() => {
-                    console.log('Thanks for sharing!');
-                }).catch(console.error);
-            } else {
-                alert('Sharing is not supported in your browser.');
-            }
-        });
-
-        window.addEventListener('load', () => {
-            translatePage(); // Translate the static content
-            fetchTopSeries(); // Fetch and display the series items
+        document.addEventListener('DOMContentLoaded', () => {
+            setLanguage(currentLanguage);
         });
     </script>
 </body>
