@@ -254,27 +254,54 @@
                         </div>
                     `;
                 });
+
+                translatePage(); // Translate the page after fetching data
             } catch (error) {
                 console.error('Error fetching top series:', error);
+                itemsContainer.innerHTML = '<p>Error loading top series. Please try again later.</p>';
             }
         }
 
-        function setLanguage(lang) {
-            currentLanguage = lang;
-            translatePage();
-            fetchTopSeries();
+        function getShareText() {
+            return `Here you have the top 3 series for today 📺\n\n${fetchedSeries.slice(0, 3).map((series, index) => {
+                return `${index + 1}️⃣ ${series.title}: 🎥\n   ${series.overview}\n\n`;
+            }).join('')}🌟 More info at https://thetop3.info/`;
         }
 
-        document.querySelectorAll('.language-flag').forEach(flag => {
-            flag.addEventListener('click', () => {
-                setLanguage(flag.getAttribute('data-lang'));
-                document.querySelectorAll('.language-flag').forEach(f => f.classList.remove('selected'));
-                flag.classList.add('selected');
-            });
+        document.querySelector('.whatsapp-share-button img').addEventListener('click', () => {
+            const whatsappText = getShareText();
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+            window.open(whatsappUrl, '_blank');
+        });
+
+        document.querySelector('.share-button img').addEventListener('click', async () => {
+            const shareText = getShareText();
+            
+            try {
+                await navigator.share({
+                    title: document.title,
+                    text: shareText,
+                });
+                console.log('Successfully shared');
+            } catch (error) {
+                console.error('Error sharing:', error);
+            }
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            setLanguage(currentLanguage);
+            document.querySelectorAll('.language-flag').forEach(flag => {
+                flag.addEventListener('click', (event) => {
+                    const selectedLang = event.target.getAttribute('data-lang');
+                    if (selectedLang) {
+                        currentLanguage = selectedLang;
+                        document.querySelectorAll('.language-flag').forEach(flag => flag.classList.remove('selected'));
+                        event.target.classList.add('selected');
+                        fetchTopSeries();
+                    }
+                });
+            });
+
+            fetchTopSeries();
         });
     </script>
 </body>
