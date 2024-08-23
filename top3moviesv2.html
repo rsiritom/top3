@@ -5,7 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-translate-key="Top 3 Movies">Top 3 Movies</title>
     <style>
-        /* Your existing CSS code */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .banner {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .banner img {
+            width: 80%;
+            height: auto;
+        }
+        .item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+        .item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            flex: 1 1 300px;
+        }
+        .item-info {
+            flex: 2 1 600px;
+        }
+        .item-info h2 {
+            margin: 0 0 10px 0;
+        }
+        .item-info p {
+            margin: 5px 0;
+        }
+        .item-info a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .item-info a:hover {
+            text-decoration: underline;
+        }
+        .language-selector {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .language-selector img {
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            margin: 0 10px;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            transition: border-color 0.3s;
+        }
+        .language-selector img:hover {
+            border-color: #007bff;
+        }
+        .language-flag.selected {
+            border-color: #007bff;
+        }
+        .share-button img,
+        .whatsapp-share-button img {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .share-button img:hover,
+        .whatsapp-share-button img:hover {
+            opacity: 0.7;
+        }
+        footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+            margin-top: 20px;
+        }
+        footer .left {
+            flex: 1;
+        }
+        footer .right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        footer img {
+            max-height: 18px; /* 60% of the previous size */
+            height: auto;
+        }
+        @media (max-width: 768px) {
+            .item {
+                flex-direction: column;
+                align-items: center;
+            }
+            .item img {
+                max-width: 100%;
+                margin-bottom: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -138,29 +254,36 @@
                         </div>
                     `;
                 });
+                translatePage(); // Translate the page after fetching and displaying content
             } catch (error) {
-                console.error('Error fetching top movies:', error);
+                console.error("Error fetching movies:", error);
             }
         }
 
-        document.querySelectorAll('.language-flag').forEach(flag => {
-            flag.addEventListener('click', () => {
-                const selectedLanguage = flag.getAttribute('data-lang');
-                if (selectedLanguage === currentLanguage) return; // Prevent reloading if the same language is selected
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            translatePage(); // Translate static texts
+            fetchTopMovies(); // Fetch and re-render items with the new language
+        }
 
-                currentLanguage = selectedLanguage;
-                document.querySelectorAll('.language-flag').forEach(flag => flag.classList.remove('selected'));
-                flag.classList.add('selected');
-                translatePage();
-                fetchTopMovies(); // Refetch movies for the selected language
+        const languageButtons = document.querySelectorAll('.language-selector img.language-flag');
+        languageButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const lang = button.getAttribute('data-lang');
+                setLanguage(lang);
+
+                // Update selected class
+                languageButtons.forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
             });
         });
 
+        // Share button functionality
         const shareButton = document.querySelector('.share-button');
-        shareButton.addEventListener('click', () => {
-            // Prepare the share text based on the language
-            let shareText = currentLanguage === 'es' ? `🎬 Top 3 Películas 🎬\n\n` : `🎬 Top 3 Movies 🎬\n\n`;
+        const whatsappButton = document.querySelector('.whatsapp-share-button');
 
+        shareButton.addEventListener('click', () => {
+            let shareText = `🎬 ${translations["Top 3 Movies"][currentLanguage]} 🎬\n\n`;
             fetchedMovies.forEach(movie => {
                 const title = movie.title;
                 const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
@@ -169,32 +292,30 @@
 
             if (navigator.share) {
                 navigator.share({
-                    text: shareText
-                }).catch((error) => console.error("Error sharing:", error));
+                    title: translations["Top 3 Movies"][currentLanguage],
+                    text: shareText,
+                    url: window.location.href
+                });
             } else {
                 alert("Sharing is not supported on this browser.");
             }
         });
 
-        const whatsappButton = document.querySelector('.whatsapp-share-button');
         whatsappButton.addEventListener('click', () => {
-            // Prepare the share text based on the current language
-            let shareText = currentLanguage === 'es' ? `🎬 Top 3 Películas 🎬\n\n` : `🎬 Top 3 Movies 🎬\n\n`;
-
+            let shareText = `🎬 ${translations["Top 3 Movies"][currentLanguage]} 🎬\n\n`;
             fetchedMovies.forEach(movie => {
                 const title = movie.title;
                 const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
                 shareText += `*${title}*\n${overview}\n\n`;
             });
 
-            // Create the WhatsApp share URL and open it
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
             window.open(whatsappUrl, '_blank');
         });
 
-        // Initial load
-        fetchTopMovies();
-        translatePage();
+        window.onload = () => {
+            setLanguage(currentLanguage); // Set default language on load
+        };
     </script>
 </body>
 </html>
