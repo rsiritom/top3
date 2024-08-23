@@ -5,12 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Top 3 Streaming</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        html, body {
+            height: 100%;
             margin: 0;
             padding: 0;
+            font-family: Arial, sans-serif;
             text-align: center;
             background-color: #000;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .content {
+            flex: 1;
         }
         .carousel {
             position: relative;
@@ -79,17 +87,16 @@
         }
         footer {
             background-color: #fff;
-            padding: 10px 0;
+            padding: 10px 20px;
             color: #000;
             font-size: 14px;
             text-align: center;
-            position: relative;
-            z-index: 2;
             border-top: 1px solid #ddd;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
+            position: relative;
+            z-index: 2;
         }
         footer .homepage-link {
             color: #000;
@@ -126,20 +133,22 @@
 <body>
     <div class="moving-background"></div>
 
-    <div class="carousel">
-        <div class="carousel-inner">
-            <img src="top3.png" alt="Top 3 Banner 1">
-            <img src="top3b.png" alt="Top 3 Banner 2">
-            <img src="top3c.png" alt="Top 3 Banner 3">
-            <img src="top3d.png" alt="Top 3 Banner 4">
+    <div class="content">
+        <div class="carousel">
+            <div class="carousel-inner">
+                <img src="top3.png" alt="Top 3 Banner 1">
+                <img src="top3b.png" alt="Top 3 Banner 2">
+                <img src="top3c.png" alt="Top 3 Banner 3">
+                <img src="top3d.png" alt="Top 3 Banner 4">
+            </div>
         </div>
-    </div>
 
-    <div class="table-container">
-        <div class="cell"><a href="top3movies.html"><img src="top3movies.png" alt="Movies"></a></div>
-        <div class="cell"><a href="top3series.html"><img src="top3series.png" alt="Series"></a></div>
-        <div class="cell"><a href="top3albums.html"><img src="top3albums.png" alt="Albums"></a></div>
-        <div class="cell"><a href="top3songsv2.html"><img src="top3songs.png" alt="Songs"></a></div>
+        <div class="table-container">
+            <div class="cell"><a href="top3movies.html"><img src="top3movies.png" alt="Movies"></a></div>
+            <div class="cell"><a href="top3series.html"><img src="top3series.png" alt="Series"></a></div>
+            <div class="cell"><a href="top3albums.html"><img src="top3albums.png" alt="Albums"></a></div>
+            <div class="cell"><a href="top3songsv2.html"><img src="top3songs.png" alt="Songs"></a></div>
+        </div>
     </div>
 
     <!-- Updated Footer with Center Text -->
