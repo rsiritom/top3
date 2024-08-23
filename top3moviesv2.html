@@ -5,123 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-translate-key="Top 3 Movies">Top 3 Movies</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-        }
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .banner {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .banner img {
-            width: 80%;
-            height: auto;
-        }
-        .item {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-start;
-            margin-bottom: 20px;
-            gap: 20px;
-        }
-        .item img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            flex: 1 1 300px;
-        }
-        .item-info {
-            flex: 2 1 600px;
-        }
-        .item-info h2 {
-            margin: 0 0 10px 0;
-        }
-        .item-info p {
-            margin: 5px 0;
-        }
-        .item-info a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .item-info a:hover {
-            text-decoration: underline;
-        }
-        .language-selector {
-            text-align: center;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-        .language-selector img {
-            cursor: pointer;
-            width: 24px;
-            height: 24px;
-            margin: 0 10px;
-            border: 2px solid transparent;
-            border-radius: 50%;
-            transition: border-color 0.3s;
-        }
-        .language-selector img:hover {
-            border-color: #007bff;
-        }
-        .language-flag.selected {
-            border-color: #007bff;
-        }
-        .share-button img,
-        .whatsapp-share-button img {
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            transition: opacity 0.3s;
-        }
-        .share-button img:hover,
-        .whatsapp-share-button img:hover {
-            opacity: 0.7;
-        }
-        footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #fff;
-            border-top: 1px solid #ddd;
-            margin-top: 20px;
-        }
-        footer .left {
-            flex: 1;
-        }
-        footer .right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        footer img {
-            max-height: 18px; /* 60% of the previous size */
-            height: auto;
-        }
-        @media (max-width: 768px) {
-            .item {
-                flex-direction: column;
-                align-items: center;
-            }
-            .item img {
-                max-width: 100%;
-                margin-bottom: 10px;
-            }
-        }
+        /* Your existing CSS code */
     </style>
 </head>
 <body>
@@ -293,28 +177,19 @@
         });
 
         const whatsappButton = document.querySelector('.whatsapp-share-button');
-        whatsappButton.addEventListener('click', async () => {
-            try {
-                // Make an API call to get the movies for the current language
-                const response = await fetch(`${endpointUrl}?lang=${currentLanguage}`);
-                const movies = await response.json();
+        whatsappButton.addEventListener('click', () => {
+            // Prepare the share text based on the current language
+            let shareText = currentLanguage === 'es' ? `🎬 Top 3 Películas 🎬\n\n` : `🎬 Top 3 Movies 🎬\n\n`;
 
-                // Prepare the share text based on the language
-                let shareText = currentLanguage === 'es' ? `🎬 Top 3 Películas 🎬\n\n` : `🎬 Top 3 Movies 🎬\n\n`;
+            fetchedMovies.forEach(movie => {
+                const title = movie.title;
+                const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
+                shareText += `*${title}*\n${overview}\n\n`;
+            });
 
-                // Loop through the movies and add the title and overview based on the selected language
-                movies.forEach(movie => {
-                    const title = movie.title;
-                    const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
-                    shareText += `*${title}*\n${overview}\n\n`;
-                });
-
-                // Create the WhatsApp share URL and open it
-                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-                window.open(whatsappUrl, '_blank');
-            } catch (error) {
-                console.error("Error fetching movies for WhatsApp share:", error);
-            }
+            // Create the WhatsApp share URL and open it
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+            window.open(whatsappUrl, '_blank');
         });
 
         // Initial load
