@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-translate-key="Top 3 Series">Top 3 Series</title>
     <style>
+        /* Add the same CSS styles as in movies.html */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -109,7 +110,7 @@
             gap: 10px;
         }
         footer img {
-            max-height: 18px; /* 60% of the previous size */
+            max-height: 18px;
             height: auto;
         }
         @media (max-width: 768px) {
@@ -248,65 +249,62 @@
                             <div class="item-info">
                                 <h2 data-translate-key="${title}">${title}</h2>
                                 <p>${currentLanguage === 'es' ? overview_es : overview}</p>
-                                <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
-                                <p><strong data-translate-key="Genre">Genre:</strong> ${currentLanguage === 'es' ? capitalizeGenres(genres_es) : capitalizeGenres(genres)}</p>
-                                <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
-                                ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
-                                ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
-                                <p><a href="${link_url}" target="_blank" data-translate-key="Learn More">Learn More</a></p>
+                                <p data-translate-key="Release Date">${release_date}</p>
+                                <p data-translate-key="Genre">${currentLanguage === 'es' ? capitalizeGenres(genres_es) : capitalizeGenres(genres)}</p>
+                                <p data-translate-key="Rating">${rating}</p>
+                                <p>${providersText}</p>
+                                <a href="${link_url}" target="_blank" data-translate-key="Learn More">Learn More</a>
                             </div>
                         </div>
                     `;
                 });
 
-                translatePage(); // Translate the page after fetching data
+                translatePage();
             } catch (error) {
                 console.error('Error fetching top series:', error);
-                itemsContainer.innerHTML = '<p>Error loading top series. Please try again later.</p>';
             }
         }
 
-        function getShareText() {
-            const seriesList = fetchedSeries.slice(0, 3).map((series, index) => {
-                return `${index + 1}️⃣ ${series.title}: 🎥\n   ${series.overview}\n\n`;
-            }).join('');
-            return translations["WhatsApp Share Text"][currentLanguage].replace('${series}', seriesList);
-        }
-
-        document.querySelector('.whatsapp-share-button img').addEventListener('click', () => {
-            const whatsappText = getShareText();
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
-            window.open(whatsappUrl, '_blank');
-        });
-
-        document.querySelector('.share-button img').addEventListener('click', async () => {
-            const shareText = getShareText();
-            
-            try {
-                await navigator.share({
-                    title: document.title,
-                    text: shareText,
-                });
-                console.log('Successfully shared');
-            } catch (error) {
-                console.error('Error sharing:', error);
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.language-flag').forEach(flag => {
-                flag.addEventListener('click', (event) => {
-                    const selectedLang = event.target.getAttribute('data-lang');
-                    if (selectedLang) {
-                        currentLanguage = selectedLang;
-                        document.querySelectorAll('.language-flag').forEach(flag => flag.classList.remove('selected'));
-                        event.target.classList.add('selected');
-                        fetchTopSeries();
-                    }
+        function setupLanguageButtons() {
+            const languageFlags = document.querySelectorAll('.language-flag');
+            languageFlags.forEach(flag => {
+                flag.addEventListener('click', function () {
+                    currentLanguage = this.getAttribute('data-lang');
+                    languageFlags.forEach(flag => flag.classList.remove('selected'));
+                    this.classList.add('selected');
+                    translatePage();
+                    fetchTopSeries(); // Refresh series after language change
                 });
             });
 
+            const shareButton = document.querySelector('.share-button');
+            const whatsappShareButton = document.querySelector('.whatsapp-share-button');
+
+            shareButton.addEventListener('click', function () {
+                const seriesText = fetchedSeries.map(series => `*${series.title}*\n${currentLanguage === 'es' ? series.overview_es : series.overview}`).join('\n\n');
+                const shareText = translations["WhatsApp Share Text"][currentLanguage].replace('${series}', seriesText);
+                if (navigator.share) {
+                    navigator.share({
+                        title: document.title,
+                        text: shareText,
+                        url: window.location.href
+                    });
+                } else {
+                    alert('Share feature is not supported on this browser.');
+                }
+            });
+
+            whatsappShareButton.addEventListener('click', function () {
+                const seriesText = fetchedSeries.map(series => `*${series.title}*\n${currentLanguage === 'es' ? series.overview_es : series.overview}`).join('\n\n');
+                const shareText = translations["WhatsApp Share Text"][currentLanguage].replace('${series}', seriesText);
+                const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+                window.open(url, '_blank');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
             fetchTopSeries();
+            setupLanguageButtons();
         });
     </script>
 </body>
