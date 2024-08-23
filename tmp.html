@@ -83,10 +83,11 @@
         }
         .country-selector {
             display: flex;
-            justify-content: center;
+            flex-wrap: nowrap; /* Prevent wrapping to multiple rows */
+            overflow-x: auto; /* Enable horizontal scrolling */
             margin-bottom: 20px;
-            flex-wrap: wrap;
             gap: 10px;
+            padding: 10px 0; /* Add padding for scroll bar visibility */
         }
         .country-button {
             padding: 10px 20px;
@@ -95,7 +96,8 @@
             background-color: #41e3cf;
             color: #fff;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px; /* Adjust font size for smaller screens */
+            white-space: nowrap; /* Prevent text wrapping */
         }
         .country-button.selected {
             background-color: #12877b;
@@ -186,6 +188,7 @@
             <a href="https://open.spotify.com/" target="_blank">
                 <img src="spotifylogo.png" alt="Spotify Logo">
             </a>
+            <a href="https://linktr.ee/mtheorysoft" target="_blank" style="text-decoration: none; color: #007bff;">by Mtheorysoft</a>
         </div>
     </footer>
 
