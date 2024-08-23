@@ -160,8 +160,8 @@
     <script>
         const translations = {
             "Top 3 Movies": {
-                "en": "Top 3 Movies",
-                "es": "Top 3 Películas"
+                "en": "Top 3 Movies for today",
+                "es": "Top 3 Películas del día de hoy"
             },
             "Release Date": {
                 "en": "Release Date",
@@ -294,7 +294,7 @@
                 navigator.share({
                     title: translations["Top 3 Movies"][currentLanguage],
                     text: shareText,
-                    url: window.location.href
+                    url: 'https://thetop3.info\n\n'
                 });
             } else {
                 alert("Sharing is not supported on this browser.");
@@ -308,6 +308,7 @@
                 const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
                 shareText += `*${title}*\n${overview}\n\n`;
             });
+            shareText += 'https://thetop3.info\n\n';
 
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
             window.open(whatsappUrl, '_blank');
