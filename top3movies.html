@@ -283,7 +283,7 @@
         const whatsappButton = document.querySelector('.whatsapp-share-button');
 
         shareButton.addEventListener('click', () => {
-            let shareText = `🎬 Top 3 Movies 🎬\n\n`;
+            let shareText = `🎬 ${translations["Top 3 Movies"][currentLanguage]} 🎬\n\n`;
             fetchedMovies.forEach(movie => {
                 const title = movie.title;
                 const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
@@ -292,7 +292,7 @@
 
             if (navigator.share) {
                 navigator.share({
-                    title: 'Top 3 Movies',
+                    title: translations["Top 3 Movies"][currentLanguage],
                     text: shareText,
                     url: window.location.href
                 });
@@ -302,7 +302,7 @@
         });
 
         whatsappButton.addEventListener('click', () => {
-            let shareText = `🎬 Top 3 Movies 🎬\n\n`;
+            let shareText = `🎬 ${translations["Top 3 Movies"][currentLanguage]} 🎬\n\n`;
             fetchedMovies.forEach(movie => {
                 const title = movie.title;
                 const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
