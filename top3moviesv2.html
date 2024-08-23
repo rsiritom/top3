@@ -254,30 +254,29 @@
                         </div>
                     `;
                 });
-
-                translatePage();
             } catch (error) {
-                console.error('Failed to fetch top 3 movies:', error);
+                console.error('Error fetching top movies:', error);
             }
         }
 
-        // Language switching logic
         document.querySelectorAll('.language-flag').forEach(flag => {
-            flag.addEventListener('click', function () {
-                currentLanguage = this.getAttribute('data-lang');
-                document.querySelectorAll('.language-flag').forEach(f => f.classList.remove('selected'));
-                this.classList.add('selected');
+            flag.addEventListener('click', () => {
+                const selectedLanguage = flag.getAttribute('data-lang');
+                if (selectedLanguage === currentLanguage) return; // Prevent reloading if the same language is selected
+
+                currentLanguage = selectedLanguage;
+                document.querySelectorAll('.language-flag').forEach(flag => flag.classList.remove('selected'));
+                flag.classList.add('selected');
                 translatePage();
-                fetchTopMovies(); // Reload movies with updated language
+                fetchTopMovies(); // Refetch movies for the selected language
             });
         });
 
-        // Share button functionality
         const shareButton = document.querySelector('.share-button');
-        const whatsappButton = document.querySelector('.whatsapp-share-button');
-
         shareButton.addEventListener('click', () => {
+            // Prepare the share text based on the language
             let shareText = currentLanguage === 'es' ? `🎬 Top 3 Películas 🎬\n\n` : `🎬 Top 3 Movies 🎬\n\n`;
+
             fetchedMovies.forEach(movie => {
                 const title = movie.title;
                 const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
@@ -286,29 +285,41 @@
 
             if (navigator.share) {
                 navigator.share({
-                    title: currentLanguage === 'es' ? 'Top 3 Películas' : 'Top 3 Movies',
-                    text: shareText,
-                    url: window.location.href
-                });
+                    text: shareText
+                }).catch((error) => console.error("Error sharing:", error));
             } else {
                 alert("Sharing is not supported on this browser.");
             }
         });
 
-        whatsappButton.addEventListener('click', () => {
-            let shareText = currentLanguage === 'es' ? `🎬 Top 3 Películas 🎬\n\n` : `🎬 Top 3 Movies 🎬\n\n`;
-            fetchedMovies.forEach(movie => {
-                const title = movie.title;
-                const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
-                shareText += `*${title}*\n${overview}\n\n`;
-            });
+        const whatsappButton = document.querySelector('.whatsapp-share-button');
+        whatsappButton.addEventListener('click', async () => {
+            try {
+                // Make an API call to get the movies for the current language
+                const response = await fetch(`${endpointUrl}?lang=${currentLanguage}`);
+                const movies = await response.json();
 
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-            window.open(whatsappUrl, '_blank');
+                // Prepare the share text based on the language
+                let shareText = currentLanguage === 'es' ? `🎬 Top 3 Películas 🎬\n\n` : `🎬 Top 3 Movies 🎬\n\n`;
+
+                // Loop through the movies and add the title and overview based on the selected language
+                movies.forEach(movie => {
+                    const title = movie.title;
+                    const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
+                    shareText += `*${title}*\n${overview}\n\n`;
+                });
+
+                // Create the WhatsApp share URL and open it
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+                window.open(whatsappUrl, '_blank');
+            } catch (error) {
+                console.error("Error fetching movies for WhatsApp share:", error);
+            }
         });
 
-        // Initial fetch on page load
+        // Initial load
         fetchTopMovies();
+        translatePage();
     </script>
 </body>
 </html>
