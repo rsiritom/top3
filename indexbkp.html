@@ -10,7 +10,7 @@
             margin: 0;
             padding: 0;
             text-align: center;
-            background-color: #000; /* Fallback background color */
+            background-color: #000;
         }
         .carousel {
             position: relative;
@@ -20,7 +20,7 @@
             overflow: hidden;
             display: flex;
             justify-content: center;
-            z-index: 2; /* Ensures carousel is above the background */
+            z-index: 2;
         }
         .carousel-inner {
             display: flex;
@@ -39,7 +39,7 @@
             max-width: 600px;
             margin: 0 auto;
             position: relative;
-            z-index: 2; /* Ensures table is above the background */
+            z-index: 2;
         }
         .cell {
             position: relative;
@@ -70,16 +70,45 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100vh; /* Full height of the viewport */
+            height: 100vh;
             background-image: url('your-background-image.jpg');
             background-repeat: no-repeat;
             background-size: cover;
             background-attachment: fixed;
-            z-index: 1; /* Background remains behind other content */
+            z-index: 1;
         }
-        @keyframes moveBackground {
-            from { background-position: 0 0; }
-            to { background-position: -1000px 0; }
+        footer {
+            background-color: #fff;
+            padding: 10px 0;
+            color: #000;
+            font-size: 14px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+        footer .homepage-link {
+            color: #000;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        footer .homepage-link:hover {
+            text-decoration: underline;
+        }
+        footer .right-link {
+            color: #000;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        footer .right-link:hover {
+            text-decoration: underline;
+        }
+        footer .center-text {
+            font-weight: bold;
         }
         @media (max-width: 768px) {
             .table-container {
@@ -95,7 +124,7 @@
     </style>
 </head>
 <body>
-    <div class="moving-background"></div> <!-- Background placed before carousel -->
+    <div class="moving-background"></div>
 
     <div class="carousel">
         <div class="carousel-inner">
@@ -112,6 +141,19 @@
         <div class="cell"><a href="top3albums.html"><img src="top3albums.png" alt="Albums"></a></div>
         <div class="cell"><a href="top3songsv2.html"><img src="top3songs.png" alt="Songs"></a></div>
     </div>
+
+    <!-- Updated Footer with Center Text -->
+    <footer>
+        <div class="left">
+            <a href="index.html" class="homepage-link">Home</a>
+        </div>
+        <div class="center-text">
+            <p>theTop3(R)</p>
+        </div>
+        <div class="right">
+            <a href="https://linktr.ee/mtheorysoft" class="right-link" target="_blank">by Mtheorysoft</a>
+        </div>
+    </footer>
 
     <script>
         const carouselInner = document.querySelector('.carousel-inner');
