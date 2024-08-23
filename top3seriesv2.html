@@ -130,6 +130,9 @@
             <img src="top3series_banner.png" alt="Top 3 Series">
         </div>
         <div class="language-selector">
+            <a href="index.html" class="back-button">
+                <img src="back.png" alt="Back">
+            </a>
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
             <a href="#" class="share-button">
@@ -187,6 +190,10 @@
             "Source": {
                 "en": "Source",
                 "es": "Fuente"
+            },
+            "WhatsApp Share Text": {
+                "en": "Here you have the top 3 series for today 📺\n\n${series}\n🌟 More info at https://thetop3.info/",
+                "es": "Aquí tienes las 3 mejores series del día 📺\n\n${series}\n🌟 Más información en https://thetop3.info/"
             }
         };
 
@@ -260,9 +267,10 @@
         }
 
         function getShareText() {
-            return `Here you have the top 3 series for today 📺\n\n${fetchedSeries.slice(0, 3).map((series, index) => {
+            const seriesList = fetchedSeries.slice(0, 3).map((series, index) => {
                 return `${index + 1}️⃣ ${series.title}: 🎥\n   ${series.overview}\n\n`;
-            }).join('')}🌟 More info at https://thetop3.info/`;
+            }).join('');
+            return translations["WhatsApp Share Text"][currentLanguage].replace('${series}', seriesList);
         }
 
         document.querySelector('.whatsapp-share-button img').addEventListener('click', () => {
