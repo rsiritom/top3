@@ -308,8 +308,9 @@
             fetchedSeries.forEach(series => {
                 const title = series.title;
                 const overview = currentLanguage === 'es' ? series.overview_es : series.overview;
-                shareText += `*${title}*\n${overview}\n\n`+'https://thetop3.info\n';
+                shareText += `*${title}*\n${overview}\n\n`;
             });
+            shareText += 'https://thetop3.info\n';
 
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
             window.open(whatsappUrl, '_blank');
