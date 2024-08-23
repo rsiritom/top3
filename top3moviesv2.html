@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -255,27 +254,21 @@
                         </div>
                     `;
                 });
-                translatePage(); // Translate the page after fetching and displaying content
+
+                translatePage();
             } catch (error) {
-                console.error("Error fetching movies:", error);
+                console.error('Failed to fetch top 3 movies:', error);
             }
         }
 
-        function setLanguage(lang) {
-            currentLanguage = lang;
-            translatePage(); // Translate static texts
-            fetchTopMovies(); // Fetch and re-render items with the new language
-        }
-
-        const languageButtons = document.querySelectorAll('.language-selector img.language-flag');
-        languageButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const lang = button.getAttribute('data-lang');
-                setLanguage(lang);
-
-                // Update selected class
-                languageButtons.forEach(btn => btn.classList.remove('selected'));
-                button.classList.add('selected');
+        // Language switching logic
+        document.querySelectorAll('.language-flag').forEach(flag => {
+            flag.addEventListener('click', function () {
+                currentLanguage = this.getAttribute('data-lang');
+                document.querySelectorAll('.language-flag').forEach(f => f.classList.remove('selected'));
+                this.classList.add('selected');
+                translatePage();
+                fetchTopMovies(); // Reload movies with updated language
             });
         });
 
@@ -284,7 +277,7 @@
         const whatsappButton = document.querySelector('.whatsapp-share-button');
 
         shareButton.addEventListener('click', () => {
-            let shareText = `🎬 Top 3 Movies 🎬\n\n`;
+            let shareText = currentLanguage === 'es' ? `🎬 Top 3 Películas 🎬\n\n` : `🎬 Top 3 Movies 🎬\n\n`;
             fetchedMovies.forEach(movie => {
                 const title = movie.title;
                 const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
@@ -293,7 +286,7 @@
 
             if (navigator.share) {
                 navigator.share({
-                    title: 'Top 3 Movies',
+                    title: currentLanguage === 'es' ? 'Top 3 Películas' : 'Top 3 Movies',
                     text: shareText,
                     url: window.location.href
                 });
@@ -303,7 +296,7 @@
         });
 
         whatsappButton.addEventListener('click', () => {
-            let shareText = `🎬 Top 3 Movies 🎬\n\n`;
+            let shareText = currentLanguage === 'es' ? `🎬 Top 3 Películas 🎬\n\n` : `🎬 Top 3 Movies 🎬\n\n`;
             fetchedMovies.forEach(movie => {
                 const title = movie.title;
                 const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
@@ -314,9 +307,8 @@
             window.open(whatsappUrl, '_blank');
         });
 
-        window.onload = () => {
-            setLanguage(currentLanguage); // Set default language on load
-        };
+        // Initial fetch on page load
+        fetchTopMovies();
     </script>
 </body>
 </html>
