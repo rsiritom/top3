@@ -37,16 +37,17 @@
             flex-wrap: wrap;
             align-items: flex-start;
             margin-bottom: 20px;
-            gap: 20px;
+            gap: 10px; /* Reduced gap between items */
         }
         .item img {
-            max-width: 300px;
+            max-width: 100%; /* Ensure image scales within its container */
             height: auto;
             border-radius: 8px;
-            flex: 1 1 300px;
+            flex: 1 1 200px; /* Adjust flex basis for smaller screens */
         }
         .item-info {
-            flex: 2 1 600px;
+            flex: 1 1 200px; /* Adjust flex basis for smaller screens */
+            max-width: 100%; /* Ensure info section scales properly */
         }
         .item-info h2 {
             margin: 0 0 10px 0;
@@ -82,10 +83,11 @@
         }
         .country-selector {
             display: flex;
-            justify-content: center;
+            flex-wrap: nowrap; /* Prevent wrapping to multiple rows */
+            overflow-x: auto; /* Enable horizontal scrolling */
             margin-bottom: 20px;
-            flex-wrap: wrap;
             gap: 10px;
+            padding: 10px 0; /* Add padding for scroll bar visibility */
         }
         .country-button {
             padding: 10px 20px;
@@ -94,7 +96,8 @@
             background-color: #41e3cf;
             color: #fff;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px; /* Adjust font size for smaller screens */
+            white-space: nowrap; /* Prevent text wrapping */
         }
         .country-button.selected {
             background-color: #12877b;
@@ -126,17 +129,21 @@
             gap: 10px;
         }
         footer img {
-            max-height: 30px; /* Ajusta la altura máxima al 60% del tamaño actual */
+            max-height: 30px; /* Adjust the maximum height */
             height: auto;
         }
         @media (max-width: 768px) {
             .item {
                 flex-direction: column;
                 align-items: center;
+                gap: 10px; /* Adjust gap for small screens */
             }
             .item img {
-                max-width: 100%;
-                margin-bottom: 10px;
+                max-width: 100%; /* Ensure images fit within the container */
+            }
+            .item-info {
+                width: 100%; /* Ensure the info section takes full width */
+                padding: 10px; /* Add padding for better spacing */
             }
         }
     </style>
@@ -151,22 +158,21 @@
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
         </div>
         <div class="country-selector">
-            <button class="country-button" data-country="AR">Argentina</button>
+			<button class="country-button" data-country="AR">Argentina</button>
+            <button class="country-button" data-country="AU">Australia</button>
             <button class="country-button" data-country="BR">Brazil</button>
+            <button class="country-button" data-country="CA">Canada</button>
             <button class="country-button" data-country="FR">France</button>
+            <button class="country-button" data-country="DE">Germany</button>
+            <button class="country-button" data-country="IN">India</button>	
+            <button class="country-button" data-country="IT">Italy</button>
+            <button class="country-button" data-country="JP">Japan</button>
+		    <button class="country-button" data-country="MX">Mexico</button>
+            <button class="country-button" data-country="ES">Spain</button>
+            <button class="country-button" data-country="KR">South Korea</button>
+            <button class="country-button" data-country="GB">United Kingdom</button>
             <button class="country-button" data-country="US">United States</button>
             <button class="country-button" data-country="UY">Uruguay</button>
-			<button class="country-button" data-country="JP">Japan</button>
-			<button class="country-button" data-country="AU">Australia</button>
-			<button class="country-button" data-country="CA">Canada</button>
-			<button class="country-button" data-country="DE">Germany</button>
-			<button class="country-button" data-country="ES">Spain</button>
-			<button class="country-button" data-country="GB">United Kingdom</button>
-			<button class="country-button" data-country="IN">India</button>
-			<button class="country-button" data-country="IT">Italy</button>
-			<button class="country-button" data-country="KR">South Korea</button>
-			<button class="country-button" data-country="MX">Mexico</button>
-			<!-- Add more country buttons as needed -->
         </div>
         <p style="text-align: center;">Please select the country</p>
         <div id="songs"></div>
@@ -181,6 +187,7 @@
             <a href="https://open.spotify.com/" target="_blank">
                 <img src="spotifylogo.png" alt="Spotify Logo">
             </a>
+            <a href="https://linktr.ee/mtheorysoft" target="_blank" style="text-decoration: none; color: #007bff;">by Mtheorysoft</a>
         </div>
     </footer>
 
@@ -275,18 +282,18 @@
                 button.classList.add('selected');
                 
                 const country = button.dataset.country;
-				const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
-        fetchTopSongs(date, country);
-    });
-});
+                const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+                fetchTopSongs(date, country);
+            });
+        });
 
-// Initial fetch if a country is selected by default
-document.addEventListener('DOMContentLoaded', () => {
-    const defaultButton = document.querySelector('.country-button');
-    if (defaultButton) {
-        defaultButton.click();
-    }
-});
+        // Initial fetch if a country is selected by default
+        document.addEventListener('DOMContentLoaded', () => {
+            const defaultButton = document.querySelector('.country-button');
+            if (defaultButton) {
+                defaultButton.click();
+            }
+        });
     </script>
 </body>
 </html>
