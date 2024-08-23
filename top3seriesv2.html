@@ -161,8 +161,8 @@
     <script>
         const translations = {
             "Top 3 Series": {
-                "en": "Top 3 Series for today",
-                "es": "Top 3 Series para hoy"
+                "en": "Top 3 Series",
+                "es": "Top 3 Series"
             },
             "Release Date": {
                 "en": "Release Date",
@@ -295,8 +295,7 @@
                 navigator.share({
                     title: translations["Top 3 Series"][currentLanguage],
                     text: shareText,
-                    //url: window.location.href
-                    url: https://thetop3.info
+                    url: window.location.href
                 }).catch(error => {
                     console.error("Error sharing:", error);
                 });
