@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-translate-key="Top 3 Series">Top 3 Series</title>
     <style>
-        /* Add the same CSS styles as in movies.html */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -110,7 +109,7 @@
             gap: 10px;
         }
         footer img {
-            max-height: 18px;
+            max-height: 18px; /* 60% of the previous size */
             height: auto;
         }
         @media (max-width: 768px) {
@@ -131,8 +130,8 @@
             <img src="top3series_banner.png" alt="Top 3 Series">
         </div>
         <div class="language-selector">
-            <a href="index.html" class="back-button">
-                <img src="back.png" alt="Back">
+            <a href="index.html">
+                <img src="back.png" alt="Back" title="Back">
             </a>
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
@@ -155,6 +154,7 @@
             <a href="https://www.themoviedb.org/" target="_blank">
                 <img src="tmdblogo.png" alt="TMDb Logo">
             </a>
+            <a href="https://linktr.ee/mtheorysoft" target="_blank" data-translate-key="by Mtheorysoft">by Mtheorysoft</a>
         </div>
     </footer>
 
@@ -191,10 +191,6 @@
             "Source": {
                 "en": "Source",
                 "es": "Fuente"
-            },
-            "WhatsApp Share Text": {
-                "en": "Here you have the top 3 series for today 📺\n\n${series}\n🌟 More info at https://thetop3.info/",
-                "es": "Aquí tienes las 3 mejores series del día 📺\n\n${series}\n🌟 Más información en https://thetop3.info/"
             }
         };
 
@@ -241,7 +237,7 @@
                     seenSeries.add(item.title); // Mark series as processed
 
                     const { title, overview, overview_es, release_date, genres, genres_es, image_url, link_url, rating, trailer_url, providers } = item;
-                    const providersText = providers && providers.length > 0 ? `Available on: ${providers.join(', ')}` : '';
+                    const providersText = providers && providers.length > 0 ? `${translations["Available on"][currentLanguage]}: ${providers.join(', ')}` : '';
 
                     itemsContainer.innerHTML += `
                         <div class="item">
@@ -249,63 +245,80 @@
                             <div class="item-info">
                                 <h2 data-translate-key="${title}">${title}</h2>
                                 <p>${currentLanguage === 'es' ? overview_es : overview}</p>
-                                <p data-translate-key="Release Date">${release_date}</p>
-                                <p data-translate-key="Genre">${currentLanguage === 'es' ? capitalizeGenres(genres_es) : capitalizeGenres(genres)}</p>
-                                <p data-translate-key="Rating">${rating}</p>
-                                <p>${providersText}</p>
-                                <a href="${link_url}" target="_blank" data-translate-key="Learn More">Learn More</a>
+                                <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
+                                <p><strong data-translate-key="Genre">Genre:</strong> ${currentLanguage === 'es' ? capitalizeGenres(genres_es) : capitalizeGenres(genres)}</p>
+                                <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
+                                ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
+                                ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
+                                <p><a href="${link_url}" target="_blank" data-translate-key="Learn More">Learn More</a></p>
                             </div>
                         </div>
                     `;
                 });
-
-                translatePage();
+                translatePage(); // Translate the page after fetching and displaying content
             } catch (error) {
-                console.error('Error fetching top series:', error);
+                console.error("Error fetching series:", error);
             }
         }
 
-        function setupLanguageButtons() {
-            const languageFlags = document.querySelectorAll('.language-flag');
-            languageFlags.forEach(flag => {
-                flag.addEventListener('click', function () {
-                    currentLanguage = this.getAttribute('data-lang');
-                    languageFlags.forEach(flag => flag.classList.remove('selected'));
-                    this.classList.add('selected');
-                    translatePage();
-                    fetchTopSeries(); // Refresh series after language change
-                });
-            });
-
-            const shareButton = document.querySelector('.share-button');
-            const whatsappShareButton = document.querySelector('.whatsapp-share-button');
-
-            shareButton.addEventListener('click', function () {
-                const seriesText = fetchedSeries.map(series => `*${series.title}*\n${currentLanguage === 'es' ? series.overview_es : series.overview}`).join('\n\n');
-                const shareText = translations["WhatsApp Share Text"][currentLanguage].replace('${series}', seriesText);
-                if (navigator.share) {
-                    navigator.share({
-                        title: document.title,
-                        text: shareText,
-                        url: window.location.href
-                    });
-                } else {
-                    alert('Share feature is not supported on this browser.');
-                }
-            });
-
-            whatsappShareButton.addEventListener('click', function () {
-                const seriesText = fetchedSeries.map(series => `*${series.title}*\n${currentLanguage === 'es' ? series.overview_es : series.overview}`).join('\n\n');
-                const shareText = translations["WhatsApp Share Text"][currentLanguage].replace('${series}', seriesText);
-                const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
-                window.open(url, '_blank');
-            });
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            translatePage(); // Translate static texts
+            fetchTopSeries(); // Fetch and re-render items with the new language
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            fetchTopSeries();
-            setupLanguageButtons();
+        const languageButtons = document.querySelectorAll('.language-selector img.language-flag');
+        languageButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const lang = button.getAttribute('data-lang');
+                setLanguage(lang);
+
+                // Update selected class
+                languageButtons.forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
+            });
         });
+
+        // Share button functionality
+        const shareButton = document.querySelector('.share-button');
+        const whatsappButton = document.querySelector('.whatsapp-share-button');
+
+        shareButton.addEventListener('click', () => {
+            let shareText = `🎬 ${translations["Top 3 Series"][currentLanguage]} 🎬\n\n`;
+            fetchedSeries.forEach(series => {
+                const title = series.title;
+                const overview = currentLanguage === 'es' ? series.overview_es : series.overview;
+                shareText += `*${title}*\n${overview}\n\n`;
+            });
+
+            if (navigator.share) {
+                navigator.share({
+                    title: translations["Top 3 Series"][currentLanguage],
+                    text: shareText,
+                    url: window.location.href
+                }).catch(error => {
+                    console.error("Error sharing:", error);
+                });
+            } else {
+                alert("Sharing is not supported on this browser.");
+            }
+        });
+
+        whatsappButton.addEventListener('click', () => {
+            let shareText = `🎬 ${translations["Top 3 Series"][currentLanguage]} 🎬\n\n`;
+            fetchedSeries.forEach(series => {
+                const title = series.title;
+                const overview = currentLanguage === 'es' ? series.overview_es : series.overview;
+                shareText += `*${title}*\n${overview}\n\n`;
+            });
+
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+            window.open(whatsappUrl, '_blank');
+        });
+
+        window.onload = () => {
+            setLanguage(currentLanguage); // Set default language on load
+        };
     </script>
 </body>
 </html>
