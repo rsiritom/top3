@@ -225,6 +225,7 @@
 
         let currentPodcasts = [];
         let currentLanguage = 'en'; // Default language
+        let currentCountry = 'AR';  // Default country
 
         async function fetchTopPodcasts(date, country) {
             try {
@@ -265,7 +266,7 @@
         }
 
         function getTranslation(key) {
-            return translations[key][currentLanguage];
+            return translations[key] && translations[key][currentLanguage] ? translations[key][currentLanguage] : key;
         }
 
         document.querySelectorAll('.language-flag').forEach(flag => {
@@ -275,22 +276,22 @@
                     flag.style.borderColor = 'transparent';
                 });
                 event.target.style.borderColor = '#007bff';
-                fetchTopPodcasts('20240826', 'US');
+                fetchTopPodcasts('20240826', currentCountry); // Use currentCountry instead of 'US'
             });
         });
 
         document.querySelectorAll('.country-button').forEach(button => {
             button.addEventListener('click', (event) => {
-                const country = event.target.dataset.country;
+                currentCountry = event.target.dataset.country; // Update the selected country
                 document.querySelectorAll('.country-button').forEach(button => {
                     button.classList.remove('selected');
                 });
                 event.target.classList.add('selected');
-                fetchTopPodcasts('20240826', country);
+                fetchTopPodcasts('20240826', currentCountry);
             });
         });
-
-        // Share button functionality
+		
+		// Share button functionality
         document.querySelector('.share-button').addEventListener('click', async () => {
             try {
                 const shareData = {
@@ -303,8 +304,8 @@
                 console.error('Error sharing:', err);
             }
         });
-
-        // WhatsApp share button functionality
+		
+		// WhatsApp share button functionality
         document.querySelector('.whatsapp-share-button').addEventListener('click', () => {
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(generateShareText() + '\nhttps://thetop3.info/top3podcasts.html')}`;
             window.open(whatsappUrl, '_blank');
@@ -319,8 +320,9 @@
             return text;
         }
 
+
         // Default country selection
-        fetchTopPodcasts('20240826', 'AR');
+        fetchTopPodcasts('20240826', currentCountry);
     </script>
 </body>
 </html>
