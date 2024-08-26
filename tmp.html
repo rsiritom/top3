@@ -175,16 +175,16 @@
             </a>
         </div>
         <div class="country-selector">
-			<button class="country-button" data-country="AR">Argentina</button>
+            <button class="country-button" data-country="AR">Argentina</button>
             <button class="country-button" data-country="AU">Australia</button>
             <button class="country-button" data-country="BR">Brazil</button>
             <button class="country-button" data-country="CA">Canada</button>
             <button class="country-button" data-country="FR">France</button>
             <button class="country-button" data-country="DE">Germany</button>
-            <button class="country-button" data-country="IN">India</button>	
+            <button class="country-button" data-country="IN">India</button>    
             <button class="country-button" data-country="IT">Italy</button>
             <button class="country-button" data-country="JP">Japan</button>
-		    <button class="country-button" data-country="MX">Mexico</button>
+            <button class="country-button" data-country="MX">Mexico</button>
             <button class="country-button" data-country="ES">Spain</button>
             <button class="country-button" data-country="KR">South Korea</button>
             <button class="country-button" data-country="GB">United Kingdom</button>
@@ -204,6 +204,7 @@
             <a href="https://open.spotify.com/" target="_blank">
                 <img src="spotifylogo.png" alt="Spotify Logo">
             </a>
+            <a href="https://linktr.ee/mtheorysoft" target="_blank" class="homepage-link">by Mtheorysoft</a>
         </div>
     </footer>
 
@@ -220,12 +221,72 @@
             "Listen on Spotify": {
                 "en": "Listen on Spotify",
                 "es": "Escuchar en Spotify"
+            },
+            "Argentina": {
+                "en": "Argentina",
+                "es": "Argentina"
+            },
+            "Australia": {
+                "en": "Australia",
+                "es": "Australia"
+            },
+            "Brazil": {
+                "en": "Brazil",
+                "es": "Brasil"
+            },
+            "Canada": {
+                "en": "Canada",
+                "es": "Canadá"
+            },
+            "France": {
+                "en": "France",
+                "es": "Francia"
+            },
+            "Germany": {
+                "en": "Germany",
+                "es": "Alemania"
+            },
+            "India": {
+                "en": "India",
+                "es": "India"
+            },
+            "Italy": {
+                "en": "Italy",
+                "es": "Italia"
+            },
+            "Japan": {
+                "en": "Japan",
+                "es": "Japón"
+            },
+            "Mexico": {
+                "en": "Mexico",
+                "es": "México"
+            },
+            "Spain": {
+                "en": "Spain",
+                "es": "España"
+            },
+            "South Korea": {
+                "en": "South Korea",
+                "es": "Corea del Sur"
+            },
+            "United Kingdom": {
+                "en": "United Kingdom",
+                "es": "Reino Unido"
+            },
+            "United States": {
+                "en": "United States",
+                "es": "Estados Unidos"
+            },
+            "Uruguay": {
+                "en": "Uruguay",
+                "es": "Uruguay"
             }
         };
 
         let currentPodcasts = [];
         let currentLanguage = 'en'; // Default language
-        let currentCountry = 'AR';  // Default country
+        let currentCountry = 'US';  // Default country
 
         async function fetchTopPodcasts(date, country) {
             try {
@@ -269,6 +330,10 @@
             return translations[key] && translations[key][currentLanguage] ? translations[key][currentLanguage] : key;
         }
 
+        function getCountryName() {
+            return translations[currentCountry] && translations[currentCountry][currentLanguage] ? translations[currentCountry][currentLanguage] : currentCountry;
+        }
+
         document.querySelectorAll('.language-flag').forEach(flag => {
             flag.addEventListener('click', (event) => {
                 currentLanguage = event.target.dataset.lang;
@@ -290,36 +355,35 @@
                 fetchTopPodcasts('20240826', currentCountry);
             });
         });
-		
-		// Share button functionality
+
+        // Share button functionality
         document.querySelector('.share-button').addEventListener('click', async () => {
             try {
                 const shareData = {
                     title: getTranslation('Top 3 Podcasts'),
                     text: generateShareText(),
-                    url: 'https://thetop3.info/top3podcasts.html'
+                    url: 'https://thetop3.info'
                 };
                 await navigator.share(shareData);
             } catch (err) {
                 console.error('Error sharing:', err);
             }
         });
-		
-		// WhatsApp share button functionality
+
+        // WhatsApp share button functionality
         document.querySelector('.whatsapp-share-button').addEventListener('click', () => {
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(generateShareText() + '\nhttps://thetop3.info/top3podcasts.html')}`;
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(generateShareText() + '\nhttps://thetop3.info')}`;
             window.open(whatsappUrl, '_blank');
         });
 
         // Generate the text for sharing
         function generateShareText() {
-            let text = `🎙 ${getTranslation('Top 3 Podcasts')} 🎙\n\n`;
+            let text = `🌍 Top 3 Podcasts in ${getCountryName()} 🌍\n\n`;
             currentPodcasts.forEach(podcast => {
                 text += `*${podcast.title}*\n${podcast.description}\n\n`;
             });
             return text;
         }
-
 
         // Default country selection
         fetchTopPodcasts('20240826', currentCountry);
