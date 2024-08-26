@@ -286,7 +286,7 @@
 
         let currentPodcasts = [];
         let currentLanguage = 'en'; // Default language
-        let currentCountry = 'US';  // Default country
+        let currentCountry = 'AR';  // Default country
 
         async function fetchTopPodcasts(date, country) {
             try {
@@ -364,6 +364,7 @@
                     text: generateShareText(),
                     url: 'https://thetop3.info'
                 };
+				console.log(generateShareText());
                 await navigator.share(shareData);
             } catch (err) {
                 console.error('Error sharing:', err);
@@ -372,18 +373,42 @@
 
         // WhatsApp share button functionality
         document.querySelector('.whatsapp-share-button').addEventListener('click', () => {
+			console.log(generateShareText());
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(generateShareText() + '\nhttps://thetop3.info')}`;
             window.open(whatsappUrl, '_blank');
         });
 
         // Generate the text for sharing
         function generateShareText() {
-            let text = `🌍 Top 3 Podcasts in ${getCountryName()} 🌍\n\n`;
+            let text = `🌍 Top 3 Podcasts in ${getCountryFullName(getCountryName())} 🌍\n\n`;
             currentPodcasts.forEach(podcast => {
                 text += `*${podcast.title}*\n${podcast.description}\n\n`;
             });
             return text;
         }
+
+		// Gets full country name
+		function getCountryFullName(countryCode) {
+		const countryNames = {
+			"AR": "Argentina",
+			"AU": "Australia",
+			"BR": "Brazil",
+			"CA": "Canada",
+			"FR": "France",
+			"DE": "Germany",
+			"IN": "India",
+			"IT": "Italy",
+			"JP": "Japan",
+			"MX": "Mexico",
+			"ES": "Spain",
+			"KR": "South Korea",
+			"GB": "United Kingdom",
+			"US": "United States",
+			"UY": "Uruguay"
+		};
+
+		return countryNames[countryCode] || "Unknown Country";
+	}
 
         // Default country selection
         fetchTopPodcasts('20240826', currentCountry);
