@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trending Songs</title>
+    <title>Top 3 Podcasts</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -25,7 +25,7 @@
             margin-bottom: 20px;
         }
         .banner img {
-            width: 80%;
+            width: 40%;
             height: auto;
         }
         h1 {
@@ -37,17 +37,17 @@
             flex-wrap: wrap;
             align-items: flex-start;
             margin-bottom: 20px;
-            gap: 10px; /* Reduced gap between items */
+            gap: 10px;
         }
         .item img {
-            max-width: 100%; /* Ensure image scales within its container */
+            max-width: 50%;
             height: auto;
             border-radius: 8px;
-            flex: 1 1 200px; /* Adjust flex basis for smaller screens */
+            flex: 1 1 200px;
         }
         .item-info {
-            flex: 1 1 200px; /* Adjust flex basis for smaller screens */
-            max-width: 100%; /* Ensure info section scales properly */
+            flex: 1 1 200px;
+            max-width: 100%;
         }
         .item-info h2 {
             margin: 0 0 10px 0;
@@ -81,13 +81,24 @@
         .language-selector img:hover {
             border-color: #007bff;
         }
+        .share-button img,
+        .whatsapp-share-button img {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .share-button img:hover,
+        .whatsapp-share-button img:hover {
+            opacity: 0.7;
+        }
         .country-selector {
             display: flex;
-            flex-wrap: nowrap; /* Prevent wrapping to multiple rows */
-            overflow-x: auto; /* Enable horizontal scrolling */
+            flex-wrap: nowrap;
+            overflow-x: auto;
             margin-bottom: 20px;
             gap: 10px;
-            padding: 10px 0; /* Add padding for scroll bar visibility */
+            padding: 10px 0;
         }
         .country-button {
             padding: 10px 20px;
@@ -96,8 +107,8 @@
             background-color: #41e3cf;
             color: #fff;
             cursor: pointer;
-            font-size: 14px; /* Adjust font size for smaller screens */
-            white-space: nowrap; /* Prevent text wrapping */
+            font-size: 14px;
+            white-space: nowrap;
         }
         .country-button.selected {
             background-color: #12877b;
@@ -129,21 +140,21 @@
             gap: 10px;
         }
         footer img {
-            max-height: 30px; /* Adjust the maximum height */
+            max-height: 15px;
             height: auto;
         }
         @media (max-width: 768px) {
             .item {
                 flex-direction: column;
                 align-items: center;
-                gap: 10px; /* Adjust gap for small screens */
+                gap: 10px;
             }
             .item img {
-                max-width: 100%; /* Ensure images fit within the container */
+                max-width: 100%;
             }
             .item-info {
-                width: 100%; /* Ensure the info section takes full width */
-                padding: 10px; /* Add padding for better spacing */
+                width: 100%;
+                padding: 10px;
             }
         }
     </style>
@@ -151,11 +162,17 @@
 <body>
     <div class="container">
         <div class="banner">
-            <img src="top3songs_banner.png" alt="Top 3 Songs">
+            <img src="top3podcasts_banner.png" alt="Top 3 Podcasts">
         </div>
         <div class="language-selector">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
+            <a href="#" class="share-button">
+                <img src="share.png" alt="Share">
+            </a>
+            <a href="#" class="whatsapp-share-button">
+                <img src="sharewhatsapp.png" alt="WhatsappShare">
+            </a>
         </div>
         <div class="country-selector">
 			<button class="country-button" data-country="AR">Argentina</button>
@@ -175,7 +192,7 @@
             <button class="country-button" data-country="UY">Uruguay</button>
         </div>
         <p style="text-align: center;">Please select the country</p>
-        <div id="songs"></div>
+        <div id="podcasts"></div>
     </div>
 
     <footer>
@@ -187,39 +204,33 @@
             <a href="https://open.spotify.com/" target="_blank">
                 <img src="spotifylogo.png" alt="Spotify Logo">
             </a>
-            <a href="https://linktr.ee/mtheorysoft" target="_blank" style="text-decoration: none; color: #007bff;">by Mtheorysoft</a>
         </div>
     </footer>
 
     <script>
         const translations = {
-            "Top 3 Songs": {
-                "en": "Top 3 Songs",
-                "es": "Top 3 Canciones"
+            "Top 3 Podcasts": {
+                "en": "Top 3 Podcasts",
+                "es": "Top 3 Podcasts"
             },
-            "Artist": {
-                "en": "Artist",
-                "es": "Artista"
-            },
-            "Release Date": {
-                "en": "Release Date",
-                "es": "Fecha publicación"
+            "Description": {
+                "en": "Description",
+                "es": "Descripción"
             },
             "Listen on Spotify": {
                 "en": "Listen on Spotify",
-                "es": "Escúcha en Spotify"
-            },
-            "Homepage": {
-                "en": "Homepage",
-                "es": "Inicio"
+                "es": "Escuchar en Spotify"
             }
         };
 
-        let currentSongs = [];
+        let currentPodcasts = [];
+        let currentLanguage = 'en'; // Default language
 
-        async function fetchTopSongs(date, country) {
+        async function fetchTopPodcasts(date, country) {
             try {
-                const response = await fetch(`https://rmanfretan.pythonanywhere.com/top3songs/${date}`);
+                const url = `https://rmanfretan.pythonanywhere.com/top3podcasts/${date}`;
+                console.log(`Fetching podcasts from: ${url}`);
+                const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`Network response was not ok: ${response.statusText}`);
                 }
@@ -227,73 +238,89 @@
                 if (!data[country]) {
                     throw new Error(`No data found for country code: ${country}`);
                 }
-                currentSongs = data[country];
-                displaySongs(currentSongs);
+                currentPodcasts = data[country];
+                displayPodcasts(currentPodcasts);
             } catch (error) {
-                console.error('There was a problem with the fetch operation:', error);
+                console.error('Error fetching podcasts:', error);
+                document.getElementById('podcasts').innerHTML = '<p>Error loading podcasts. Please try again later.</p>';
             }
         }
 
-        function displaySongs(songs) {
-            const songsContainer = document.getElementById('songs');
-            songsContainer.innerHTML = '';
-            songs.forEach(song => {
-                const songItem = document.createElement('div');
-                songItem.classList.add('item');
-                songItem.innerHTML = `
-                    <img src="${song.image_url}" alt="${song.title}">
+        function displayPodcasts(podcasts) {
+            const container = document.getElementById('podcasts');
+            container.innerHTML = '';
+            podcasts.forEach(podcast => {
+                const podcastElement = document.createElement('div');
+                podcastElement.className = 'item';
+                podcastElement.innerHTML = `
+                    <img src="${podcast.image_url}" alt="${podcast.title}">
                     <div class="item-info">
-                        <h2>${song.title}</h2>
-                        <p><strong data-translate-key="Artist">${translations["Artist"][getSelectedLanguage()]}:</strong> ${song.artist}</p>
-                        <p><strong data-translate-key="Release Date">${translations["Release Date"][getSelectedLanguage()]}:</strong> ${song.release_date}</p>
-                        <p><a href="${song.spotify_url}" target="_blank" data-translate-key="Listen on Spotify">${translations["Listen on Spotify"][getSelectedLanguage()]}</a></p>
+                        <h2>${podcast.title}</h2>
+                        <p><strong>${getTranslation('Description')}:</strong> ${podcast.description}</p>
+                        <a href="${podcast.spotify_url}" target="_blank">${getTranslation('Listen on Spotify')}</a>
                     </div>
                 `;
-                songsContainer.appendChild(songItem);
+                container.appendChild(podcastElement);
             });
         }
 
-        function getSelectedLanguage() {
-            return document.querySelector('.language-flag.selected')?.dataset.lang || 'en';
+        function getTranslation(key) {
+            return translations[key][currentLanguage];
         }
 
         document.querySelectorAll('.language-flag').forEach(flag => {
-            flag.addEventListener('click', () => {
-                document.querySelectorAll('.language-flag').forEach(flag => flag.classList.remove('selected'));
-                flag.classList.add('selected');
-                translatePage();
-                displaySongs(currentSongs);
+            flag.addEventListener('click', (event) => {
+                currentLanguage = event.target.dataset.lang;
+                document.querySelectorAll('.language-flag').forEach(flag => {
+                    flag.style.borderColor = 'transparent';
+                });
+                event.target.style.borderColor = '#007bff';
+                fetchTopPodcasts('20240826', 'US');
             });
         });
-
-        function translatePage() {
-            document.querySelectorAll('[data-translate-key]').forEach(element => {
-                const key = element.getAttribute('data-translate-key');
-                element.textContent = translations[key][getSelectedLanguage()];
-            });
-        }
 
         document.querySelectorAll('.country-button').forEach(button => {
-            button.addEventListener('click', () => {
-                // Deselect previously selected button
-                document.querySelectorAll('.country-button').forEach(btn => btn.classList.remove('selected'));
-                
-                // Select the clicked button
-                button.classList.add('selected');
-                
-                const country = button.dataset.country;
-                const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
-                fetchTopSongs(date, country);
+            button.addEventListener('click', (event) => {
+                const country = event.target.dataset.country;
+                document.querySelectorAll('.country-button').forEach(button => {
+                    button.classList.remove('selected');
+                });
+                event.target.classList.add('selected');
+                fetchTopPodcasts('20240826', country);
             });
         });
 
-        // Initial fetch if a country is selected by default
-        document.addEventListener('DOMContentLoaded', () => {
-            const defaultButton = document.querySelector('.country-button');
-            if (defaultButton) {
-                defaultButton.click();
+        // Share button functionality
+        document.querySelector('.share-button').addEventListener('click', async () => {
+            try {
+                const shareData = {
+                    title: getTranslation('Top 3 Podcasts'),
+                    text: generateShareText(),
+                    url: 'https://thetop3.info/top3podcasts.html'
+                };
+                await navigator.share(shareData);
+            } catch (err) {
+                console.error('Error sharing:', err);
             }
         });
+
+        // WhatsApp share button functionality
+        document.querySelector('.whatsapp-share-button').addEventListener('click', () => {
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(generateShareText() + '\nhttps://thetop3.info/top3podcasts.html')}`;
+            window.open(whatsappUrl, '_blank');
+        });
+
+        // Generate the text for sharing
+        function generateShareText() {
+            let text = `🎙 ${getTranslation('Top 3 Podcasts')} 🎙\n\n`;
+            currentPodcasts.forEach(podcast => {
+                text += `*${podcast.title}*\n${podcast.description}\n\n`;
+            });
+            return text;
+        }
+
+        // Default country selection
+        fetchTopPodcasts('20240826', 'AR');
     </script>
 </body>
 </html>
