@@ -341,7 +341,7 @@
         function generateShareText() {
             let text = `🌍 Top 3 Episodes in ${getCountryFullName(currentCountry)} 🌍\n\n`;
             currentEpisodes.forEach(episode => {
-                text += `*${episode.title}*\n${episode.html_description}\n\n`;
+                text += `*${episode.title}*\n${episode.description}\n\n`;
             });
             return text;
         }
