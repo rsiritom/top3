@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top 3 Episodes</title>
+    <title>Top 3 Podcasts</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -166,10 +167,10 @@
 <body>
     <div class="container">
         <div class="banner">
-            <img src="top3episodes_banner.png" alt="Top 3 Podcasts">
+            <img src="top3podcasts_banner.png" alt="Top 3 Podcasts">
         </div>
         <div class="language-selector">
-            <a href="index.html">
+	    <a href="index.html">
                 <img src="back.png" alt="Back" title="Back">
             </a>
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
@@ -199,7 +200,7 @@
             <button class="country-button" data-country="UY">Uruguay</button>
         </div>
         <p style="text-align: center;">Please select the country</p>
-        <div id="episodes"></div>
+        <div id="podcasts"></div>
     </div>
 
     <footer>
@@ -217,40 +218,96 @@
 
     <script>
         const translations = {
-            "Top 3 Episodes": {
-                "en": "Top 3 Episodes",
-                "es": "Top 3 Episodios"
+            "Top 3 Podcasts": {
+                "en": "Top 3 Podcasts",
+                "es": "Top 3 Podcasts"
             },
             "Description": {
                 "en": "Description",
                 "es": "Descripción"
             },
-            "Duration": {
-                "en": "Duration",
-                "es": "Duración"
+            "Publisher": {
+                "en": "Publisher",
+                "es": "Publicado por"
             },
-            "Language": {
-                "en": "Language",
-                "es": "Idioma"
-            },
-            "Release Date": {
-                "en": "Release Date",
-                "es": "Fecha de lanzamiento"
+            "TotalEpisodes": {
+                "en": "Total Episodes",
+                "es": "Npumero de Episodios"
             },
             "Listen on Spotify": {
                 "en": "Listen on Spotify",
                 "es": "Escuchar en Spotify"
             },
+            "Argentina": {
+                "en": "Argentina",
+                "es": "Argentina"
+            },
+            "Australia": {
+                "en": "Australia",
+                "es": "Australia"
+            },
+            "Brazil": {
+                "en": "Brazil",
+                "es": "Brasil"
+            },
+            "Canada": {
+                "en": "Canada",
+                "es": "Canadá"
+            },
+            "France": {
+                "en": "France",
+                "es": "Francia"
+            },
+            "Germany": {
+                "en": "Germany",
+                "es": "Alemania"
+            },
+            "India": {
+                "en": "India",
+                "es": "India"
+            },
+            "Italy": {
+                "en": "Italy",
+                "es": "Italia"
+            },
+            "Japan": {
+                "en": "Japan",
+                "es": "Japón"
+            },
+            "Mexico": {
+                "en": "Mexico",
+                "es": "México"
+            },
+            "Spain": {
+                "en": "Spain",
+                "es": "España"
+            },
+            "South Korea": {
+                "en": "South Korea",
+                "es": "Corea del Sur"
+            },
+            "United Kingdom": {
+                "en": "United Kingdom",
+                "es": "Reino Unido"
+            },
+            "United States": {
+                "en": "United States",
+                "es": "Estados Unidos"
+            },
+            "Uruguay": {
+                "en": "Uruguay",
+                "es": "Uruguay"
+            }
         };
 
-        let currentEpisodes = [];
+        let currentPodcasts = [];
         let currentLanguage = 'en'; // Default language
         let currentCountry = 'AR';  // Default country
 
-        async function fetchTopEpisodes(date, country) {
+        async function fetchTopPodcasts(date, country) {
             try {
-                const url = `https://rmanfretan.pythonanywhere.com/top3episodes/${date}`;
-                console.log(`Fetching episodes from: ${url}`);
+                const url = `https://rmanfretan.pythonanywhere.com/top3podcasts/${date}`;
+                console.log(`Fetching podcasts from: ${url}`);
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`Network response was not ok: ${response.statusText}`);
@@ -259,38 +316,40 @@
                 if (!data[country]) {
                     throw new Error(`No data found for country code: ${country}`);
                 }
-                currentEpisodes = data[country];
-                displayEpisodes(currentEpisodes);
+                currentPodcasts = data[country];
+                displayPodcasts(currentPodcasts);
             } catch (error) {
-                console.error('Error fetching episodes:', error);
-                document.getElementById('episodes').innerHTML = '<p>Error loading episodes. Please try again later.</p>';
+                console.error('Error fetching podcasts:', error);
+                document.getElementById('podcasts').innerHTML = '<p>Error loading podcasts. Please try again later.</p>';
             }
         }
 
-        function displayEpisodes(episodes) {
-            const container = document.getElementById('episodes');
+        function displayPodcasts(podcasts) {
+            const container = document.getElementById('podcasts');
             container.innerHTML = '';
-            episodes.forEach(episode => {
-                const durationInMinutes = Math.floor(episode.duration_ms / 60000);
-                const episodeElement = document.createElement('div');
-                episodeElement.className = 'item';
-                episodeElement.innerHTML = `
-                    <img src="${episode.image_url}" alt="${episode.title}">
+            podcasts.forEach(podcast => {
+                const podcastElement = document.createElement('div');
+                podcastElement.className = 'item';
+                podcastElement.innerHTML = `
+                    <img src="${podcast.image_url}" alt="${podcast.title}">
                     <div class="item-info">
-                        <h2>${episode.title}</h2>
-                        <p><strong>${getTranslation('Description')}:</strong> ${episode.html_description}</p>
-                        <p><strong>${getTranslation('Duration')}:</strong> ${durationInMinutes} minutes</p>
-                        <p><strong>${getTranslation('Language')}:</strong> ${episode.language}</p>
-                        <p><strong>${getTranslation('Release Date')}:</strong> ${episode.release_date}</p>
-                        <a href="${episode.spotify_url}" target="_blank">${getTranslation('Listen on Spotify')}</a>
+                        <h2>${podcast.title}</h2>
+                        <p><strong>${getTranslation('Description')}:</strong> ${podcast.html_description}</p>
+						<p><strong>${getTranslation('Publisher')}:</strong> ${podcast["publisher:"]}</p>
+						<p><strong>${getTranslation('TotalEpisodes')}:</strong> ${podcast.total_episodes}</p>
+                        <a href="${podcast.spotify_url}" target="_blank">${getTranslation('Listen on Spotify')}</a>
                     </div>
                 `;
-                container.appendChild(episodeElement);
+                container.appendChild(podcastElement);
             });
         }
 
         function getTranslation(key) {
-            return translations[key][currentLanguage] || key;
+            return translations[key] && translations[key][currentLanguage] ? translations[key][currentLanguage] : key;
+        }
+
+        function getCountryName() {
+            return translations[currentCountry] && translations[currentCountry][currentLanguage] ? translations[currentCountry][currentLanguage] : currentCountry;
         }
 
         document.querySelectorAll('.language-flag').forEach(flag => {
@@ -300,7 +359,7 @@
                     flag.style.borderColor = 'transparent';
                 });
                 event.target.style.borderColor = '#007bff';
-                fetchTopEpisodes(getCurrentDate(), currentCountry); // Updated function call
+                fetchTopPodcasts(getCurrentDate(), currentCountry); // Use currentCountry instead of 'US'
             });
         });
 
@@ -311,7 +370,7 @@
                     button.classList.remove('selected');
                 });
                 event.target.classList.add('selected');
-                fetchTopEpisodes(getCurrentDate(), currentCountry); // Updated function call
+                fetchTopPodcasts(getCurrentDate(), currentCountry);
             });
         });
 
@@ -319,11 +378,11 @@
         document.querySelector('.share-button').addEventListener('click', async () => {
             try {
                 const shareData = {
-                    title: getTranslation('Top 3 Episodes'),
+                    title: getTranslation('Top 3 Podcasts'),
                     text: generateShareText(),
                     url: 'https://thetop3.info'
                 };
-                console.log(generateShareText());
+				console.log(generateShareText());
                 await navigator.share(shareData);
             } catch (err) {
                 console.error('Error sharing:', err);
@@ -332,43 +391,43 @@
 
         // WhatsApp share button functionality
         document.querySelector('.whatsapp-share-button').addEventListener('click', () => {
-            console.log(generateShareText());
+			console.log(generateShareText());
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(generateShareText() + '\nhttps://thetop3.info')}`;
             window.open(whatsappUrl, '_blank');
         });
 
         // Generate the text for sharing
         function generateShareText() {
-            let text = `🌍 Top 3 Episodes in ${getCountryFullName(currentCountry)} 🌍\n\n`;
-            currentEpisodes.forEach(episode => {
-                text += `*${episode.title}*\n${episode.description}\n\n`;
+            let text = `🎤 Top 3 Podcasts in ${getCountryFullName(getCountryName())} 🎤\n\n`;
+            currentPodcasts.forEach(podcast => {
+                text += `*${podcast.title}*\n${podcast.description}\n\n`;
             });
             return text;
         }
 
-        // Gets full country name
-        function getCountryFullName(countryCode) {
-            const countryNames = {
-                "AR": "Argentina",
-                "AU": "Australia",
-                "BR": "Brazil",
-                "CA": "Canada",
-                "FR": "France",
-                "DE": "Germany",
-                "IN": "India",
-                "IT": "Italy",
-                "JP": "Japan",
-                "MX": "Mexico",
-                "ES": "Spain",
-                "KR": "South Korea",
-                "GB": "United Kingdom",
-                "US": "United States",
-                "UY": "Uruguay"
-            };
+		// Gets full country name
+		function getCountryFullName(countryCode) {
+		const countryNames = {
+			"AR": "Argentina",
+			"AU": "Australia",
+			"BR": "Brazil",
+			"CA": "Canada",
+			"FR": "France",
+			"DE": "Germany",
+			"IN": "India",
+			"IT": "Italy",
+			"JP": "Japan",
+			"MX": "Mexico",
+			"ES": "Spain",
+			"KR": "South Korea",
+			"GB": "United Kingdom",
+			"US": "United States",
+			"UY": "Uruguay"
+		};
 
-            return countryNames[countryCode] || "Unknown Country";
-        }
-		
+		return countryNames[countryCode] || "Unknown Country";
+	}
+
 		function getCurrentDate() {
 			const today = new Date();
 			const year = today.getFullYear();
@@ -377,8 +436,8 @@
 			return `${year}${month}${day}`;
 		}
 
-        // Default selection
-        fetchTopEpisodes(getCurrentDate(), currentCountry);
+        // Default country selection
+        fetchTopPodcasts(getCurrentDate(), currentCountry);
     </script>
 </body>
 </html>
