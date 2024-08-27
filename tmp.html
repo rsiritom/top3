@@ -226,6 +226,14 @@
                 "en": "Description",
                 "es": "Descripción"
             },
+            "Publisher": {
+                "en": "Publisher",
+                "es": "Publicado por"
+            },
+            "TotalEpisodes": {
+                "en": "Total Episodes",
+                "es": "Npumero de Episodios"
+            },
             "Listen on Spotify": {
                 "en": "Listen on Spotify",
                 "es": "Escuchar en Spotify"
@@ -327,6 +335,8 @@
                     <div class="item-info">
                         <h2>${podcast.title}</h2>
                         <p><strong>${getTranslation('Description')}:</strong> ${podcast.description}</p>
+						<p><strong>${getTranslation('Publisher')}:</strong> ${podcast["publisher:"]}</p>
+						<p><strong>${getTranslation('TotalEpisodes')}:</strong> ${podcast.total_episodes}</p>
                         <a href="${podcast.spotify_url}" target="_blank">${getTranslation('Listen on Spotify')}</a>
                     </div>
                 `;
