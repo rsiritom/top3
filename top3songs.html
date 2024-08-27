@@ -218,6 +218,8 @@
 
         async function fetchTopSongs(date, country) {
             try {
+		const urlfetch = `https://rmanfretan.pythonanywhere.com/top3songs/${date}`;
+		console.log(`Fetching podcasts from: ${urlfetch}`);
                 const response = await fetch(`https://rmanfretan.pythonanywhere.com/top3songs/${date}`);
                 if (!response.ok) {
                     throw new Error(`Network response was not ok: ${response.statusText}`);
