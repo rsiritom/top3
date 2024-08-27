@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -348,7 +349,7 @@
                     flag.style.borderColor = 'transparent';
                 });
                 event.target.style.borderColor = '#007bff';
-                fetchTopPodcasts('20240826', currentCountry); // Use currentCountry instead of 'US'
+                fetchTopPodcasts(getCurrentDate(), currentCountry); // Use currentCountry instead of 'US'
             });
         });
 
@@ -359,7 +360,7 @@
                     button.classList.remove('selected');
                 });
                 event.target.classList.add('selected');
-                fetchTopPodcasts('20240826', currentCountry);
+                fetchTopPodcasts(getCurrentDate(), currentCountry);
             });
         });
 
@@ -387,7 +388,7 @@
 
         // Generate the text for sharing
         function generateShareText() {
-            let text = `🌍 Top 3 Podcasts in ${getCountryFullName(getCountryName())} 🌍\n\n`;
+            let text = `🎤 Top 3 Podcasts in ${getCountryFullName(getCountryName())} 🎤\n\n`;
             currentPodcasts.forEach(podcast => {
                 text += `*${podcast.title}*\n${podcast.description}\n\n`;
             });
@@ -417,8 +418,16 @@
 		return countryNames[countryCode] || "Unknown Country";
 	}
 
+		function getCurrentDate() {
+			const today = new Date();
+			const year = today.getFullYear();
+			const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+			const day = String(today.getDate()).padStart(2, '0');
+			return `${year}${month}${day}`;
+		}
+
         // Default country selection
-        fetchTopPodcasts('20240826', currentCountry);
+        fetchTopPodcasts(getCurrentDate(), currentCountry);
     </script>
 </body>
 </html>
