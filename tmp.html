@@ -24,6 +24,13 @@
                 <img src="sharewhatsapp.png" alt="Share on WhatsApp">
             </a>
         </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <input type="text" id="searchTerm" placeholder="Enter search term">
+            <button id="searchButton">Search</button>
+        </div>
+
         <div id="items"></div>
     </div>
 
@@ -59,11 +66,11 @@
             });
         }
 
-        async function fetchTopMovies() {
+        async function fetchTopMovies(searchTerm) {
             const itemsContainer = document.getElementById('items');
             itemsContainer.innerHTML = ''; // Clear previous items
 
-            const tmdbUrl = 'https://api.themoviedb.org/3/search/movie?api_key=29a18159e2f43f00312a90a7b88dd8d3&with_genres=35&query=terror&language=es-ES';
+            const tmdbUrl = `https://api.themoviedb.org/3/search/movie?api_key=29a18159e2f43f00312a90a7b88dd8d3&with_genres=35&query=${encodeURIComponent(searchTerm)}&language=es-ES`;
 
             try {
                 const response = await fetch(tmdbUrl);
@@ -95,8 +102,17 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            fetchTopMovies();
+            // Initial search for "terror"
+            fetchTopMovies('terror');
             translatePage(); // Call translation after loading
+
+            // Handle search button click
+            document.getElementById('searchButton').addEventListener('click', () => {
+                const searchTerm = document.getElementById('searchTerm').value.trim();
+                if (searchTerm) {
+                    fetchTopMovies(searchTerm);
+                }
+            });
         });
     </script>
 </body>
