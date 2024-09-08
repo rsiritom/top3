@@ -70,6 +70,21 @@
                     const movieItem = document.createElement('div');
                     movieItem.classList.add('item');
 
+                    let providersHTML = '';
+                    if (providers.length > 0) {
+                        providersHTML = `<p><strong data-translate-key="Available On">Available On:</strong> ${providers.map(provider => provider.provider_name).join(', ')}</p>`;
+                    }
+
+                    let trailerHTML = '';
+                    if (trailerUrl) {
+                        trailerHTML = `<a href="${trailerUrl}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a>`;
+                    }
+
+                    let homepageHTML = '';
+                    if (detailedMovie.homepage) {
+                        homepageHTML = `<a href="${detailedMovie.homepage}" target="_blank" data-translate-key="Watch Now">Watch Now</a>`;
+                    }
+
                     movieItem.innerHTML = `
                         <img src="https://image.tmdb.org/t/p/w500${detailedMovie.poster_path}" alt="${detailedMovie.title}">
                         <div class="item-info">
@@ -79,9 +94,9 @@
                             <p><strong data-translate-key="Runtime">Runtime:</strong> ${detailedMovie.runtime} minutes</p>
                             <p><strong data-translate-key="Overview">Overview:</strong> ${detailedMovie.overview}</p>
                             <p><strong data-translate-key="Tagline">Tagline:</strong> ${detailedMovie.tagline}</p>
-                            ${providers.length > 0 ? `<p><strong data-translate-key="Available On">Available On:</strong> ${providers.map(provider => provider.provider_name).join(', ')}</p>` : '<p>Providers not available</p>'}
-                            ${trailerUrl ? `<a href="${trailerUrl}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a>` : '<p>Trailer not available</p>'}
-                            ${detailedMovie.homepage ? `<a href="${detailedMovie.homepage}" target="_blank" data-translate-key="Watch Now">Watch Now</a>` : '<p>Homepage not available</p>'}
+                            ${providersHTML || '<p>Providers not available</p>'}
+                            ${trailerHTML || '<p>Trailer not available</p>'}
+                            ${homepageHTML || '<p>Homepage not available</p>'}
                             <a href="https://www.themoviedb.org/movie/${detailedMovie.id}" target="_blank" data-translate-key="Learn More">Learn More</a>
                         </div>
                     `;
