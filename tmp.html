@@ -47,39 +47,26 @@
     </footer>
 
     <script>
-        const translations = {
-            "Top 3 Movies": {
-                "en": "Top 3 Movies for today",
-                "es": "Top 3 Películas del día de hoy"
-            },
-            // Add more translations as needed
-        };
-
-        let currentLanguage = 'es'; // Default language is set to Spanish
-
-        function translatePage() {
-            const elementsToTranslate = document.querySelectorAll('[data-translate-key]');
-            elementsToTranslate.forEach(element => {
-                const key = element.getAttribute('data-translate-key');
-                const translation = translations[key] && translations[key][currentLanguage] ? translations[key][currentLanguage] : key;
-                element.innerText = translation;
-            });
-        }
+        const API_KEY = '29a18159e2f43f00312a90a7b88dd8d3';
 
         async function fetchTopMovies(searchTerm) {
             const itemsContainer = document.getElementById('items');
             itemsContainer.innerHTML = ''; // Clear previous items
 
-            const tmdbUrl = `https://api.themoviedb.org/3/search/movie?api_key=29a18159e2f43f00312a90a7b88dd8d3&with_genres=35&query=${encodeURIComponent(searchTerm)}&language=es-ES`;
+            const tmdbUrl = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&with_genres=35&query=${encodeURIComponent(searchTerm)}&language=es-ES`;
 
             try {
                 const response = await fetch(tmdbUrl);
                 const data = await response.json();
                 const movies = data.results.slice(0, 3); // Get top 3 movies
 
-                movies.forEach(movie => {
+                movies.forEach(async (movie) => {
                     const movieItem = document.createElement('div');
                     movieItem.classList.add('item');
+
+                    // Fetch trailer and platforms
+                    const trailerUrl = await fetchMovieTrailer(movie.id);
+                    const platforms = await fetchWatchProviders(movie.id);
 
                     movieItem.innerHTML = `
                         <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
@@ -88,6 +75,8 @@
                             <p><strong data-translate-key="Release Date">Fecha publicación:</strong> ${movie.release_date}</p>
                             <p><strong data-translate-key="Rating">Valoración:</strong> ${movie.vote_average}</p>
                             <p>${movie.overview}</p>
+                            <a href="${trailerUrl}" target="_blank" data-translate-key="Watch Trailer">Ver tráiler</a>
+                            <p><strong data-translate-key="Available On">Disponible en:</strong> ${platforms}</p>
                             <a href="https://www.themoviedb.org/movie/${movie.id}" target="_blank" data-translate-key="Learn More">Más detalles</a>
                         </div>
                     `;
@@ -101,10 +90,39 @@
             }
         }
 
+        async function fetchMovieTrailer(movieId) {
+            const trailerUrl = `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${API_KEY}&language=es-ES`;
+            try {
+                const response = await fetch(trailerUrl);
+                const data = await response.json();
+                const trailer = data.results.find(video => video.type === 'Trailer' && video.site === 'YouTube');
+                return trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : '#'; // Return YouTube trailer link or "#" if not available
+            } catch (error) {
+                console.error("Failed to fetch trailer:", error);
+                return '#'; // Return "#" if any error occurs
+            }
+        }
+
+        async function fetchWatchProviders(movieId) {
+            const providerUrl = `https://api.themoviedb.org/3/movie/${movieId}/watch/providers?api_key=${API_KEY}`;
+            try {
+                const response = await fetch(providerUrl);
+                const data = await response.json();
+                const providers = data.results.ES; // Assuming 'ES' for Spain. Change to appropriate region.
+                if (providers && providers.flatrate) {
+                    return providers.flatrate.map(provider => provider.provider_name).join(', ');
+                } else {
+                    return 'No disponible en plataformas conocidas'; // If no providers are available
+                }
+            } catch (error) {
+                console.error("Failed to fetch watch providers:", error);
+                return 'Error al cargar plataformas'; // Return error message if fetching platforms fails
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             // Initial search for "terror"
             fetchTopMovies('terror');
-            translatePage(); // Call translation after loading
 
             // Handle search button click
             document.getElementById('searchButton').addEventListener('click', () => {
