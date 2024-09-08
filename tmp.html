@@ -61,7 +61,11 @@
                 const movies = data.results.slice(0, 3); // Get top 3 movies
 
                 for (const movie of movies) {
-                    const detailedMovie = await fetchMovieDetails(movie.id); // Fetch detailed info
+                    const [detailedMovie, providers, trailerUrl] = await Promise.all([
+                        fetchMovieDetails(movie.id), // Fetch detailed info
+                        fetchProviders(movie.id), // Fetch providers
+                        fetchTrailer(movie.id) // Fetch trailer URL
+                    ]);
 
                     const movieItem = document.createElement('div');
                     movieItem.classList.add('item');
@@ -75,6 +79,8 @@
                             <p><strong data-translate-key="Runtime">Runtime:</strong> ${detailedMovie.runtime} minutes</p>
                             <p><strong data-translate-key="Overview">Overview:</strong> ${detailedMovie.overview}</p>
                             <p><strong data-translate-key="Tagline">Tagline:</strong> ${detailedMovie.tagline}</p>
+                            ${providers.length > 0 ? `<p><strong data-translate-key="Available On">Available On:</strong> ${providers.map(provider => provider.provider_name).join(', ')}</p>` : '<p>Providers not available</p>'}
+                            ${trailerUrl ? `<a href="${trailerUrl}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a>` : '<p>Trailer not available</p>'}
                             ${detailedMovie.homepage ? `<a href="${detailedMovie.homepage}" target="_blank" data-translate-key="Watch Now">Watch Now</a>` : '<p>Homepage not available</p>'}
                             <a href="https://www.themoviedb.org/movie/${detailedMovie.id}" target="_blank" data-translate-key="Learn More">Learn More</a>
                         </div>
@@ -98,6 +104,31 @@
             } catch (error) {
                 console.error("Failed to fetch movie details:", error);
                 return {}; // Return empty object if there's an error
+            }
+        }
+
+        async function fetchProviders(movieId) {
+            const url = `https://api.themoviedb.org/3/movie/${movieId}/watch/providers?api_key=${API_KEY}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                return data.results?.US?.flatrate || [];
+            } catch (error) {
+                console.error("Failed to fetch providers:", error);
+                return []; // Return empty array if there's an error
+            }
+        }
+
+        async function fetchTrailer(movieId) {
+            const url = `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${API_KEY}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const trailer = data.results.find(video => video.type === 'Trailer');
+                return trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : null;
+            } catch (error) {
+                console.error("Failed to fetch trailer:", error);
+                return null; // Return null if there's an error
             }
         }
 
