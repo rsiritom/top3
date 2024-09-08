@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top 3 Podcasts</title>
+    <title data-translate-key="Top 3 Movies">Top 3 Movies</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,38 +26,30 @@
             margin-bottom: 20px;
         }
         .banner img {
-            width: 40%;
+            width: 80%;
             height: auto;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
         }
         .item {
             display: flex;
             flex-wrap: wrap;
             align-items: flex-start;
             margin-bottom: 20px;
-            gap: 10px;
+            gap: 20px;
         }
         .item img {
-            max-width: 50%;
+            max-width: 100%;
             height: auto;
             border-radius: 8px;
-            flex: 1 1 200px;
+            flex: 1 1 300px;
         }
         .item-info {
-            flex: 1 1 200px;
-            max-width: 100%;
+            flex: 2 1 600px;
         }
         .item-info h2 {
             margin: 0 0 10px 0;
         }
         .item-info p {
             margin: 5px 0;
-        }
-        .item-info p strong {
-            font-weight: bold;
         }
         .item-info a {
             color: #007bff;
@@ -86,6 +78,9 @@
         .language-selector img:hover {
             border-color: #007bff;
         }
+        .language-flag.selected {
+            border-color: #007bff;
+        }
         .share-button img,
         .whatsapp-share-button img {
             width: 24px;
@@ -96,36 +91,6 @@
         .share-button img:hover,
         .whatsapp-share-button img:hover {
             opacity: 0.7;
-        }
-        .country-selector {
-            display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            margin-bottom: 20px;
-            gap: 10px;
-            padding: 10px 0;
-        }
-        .country-button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            background-color: #41e3cf;
-            color: #fff;
-            cursor: pointer;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-        .country-button.selected {
-            background-color: #12877b;
-        }
-        .homepage-link {
-            display: inline-block;
-            text-decoration: none;
-            color: #007bff;
-            font-weight: bold;
-        }
-        .homepage-link:hover {
-            text-decoration: underline;
         }
         footer {
             display: flex;
@@ -145,21 +110,17 @@
             gap: 10px;
         }
         footer img {
-            max-height: 15px;
+            max-height: 18px; /* 60% of the previous size */
             height: auto;
         }
         @media (max-width: 768px) {
             .item {
                 flex-direction: column;
                 align-items: center;
-                gap: 10px;
             }
             .item img {
                 max-width: 100%;
-            }
-            .item-info {
-                width: 100%;
-                padding: 10px;
+                margin-bottom: 10px;
             }
         }
     </style>
@@ -167,10 +128,10 @@
 <body>
     <div class="container">
         <div class="banner">
-            <img src="top3podcasts_banner.png" alt="Top 3 Podcasts">
+            <img src="top3movies_banner.png" alt="Top 3 Movies">
         </div>
         <div class="language-selector">
-	    <a href="index.html">
+            <a href="index.html">
                 <img src="back.png" alt="Back" title="Back">
             </a>
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
@@ -179,28 +140,10 @@
                 <img src="share.png" alt="Share">
             </a>
             <a href="#" class="whatsapp-share-button">
-                <img src="sharewhatsapp.png" alt="WhatsappShare">
+                <img src="sharewhatsapp.png" alt="Share on WhatsApp">
             </a>
         </div>
-        <div class="country-selector">
-            <button class="country-button" data-country="AR">Argentina</button>
-            <button class="country-button" data-country="AU">Australia</button>
-            <button class="country-button" data-country="BR">Brazil</button>
-            <button class="country-button" data-country="CA">Canada</button>
-            <button class="country-button" data-country="FR">France</button>
-            <button class="country-button" data-country="DE">Germany</button>
-            <button class="country-button" data-country="IN">India</button>    
-            <button class="country-button" data-country="IT">Italy</button>
-            <button class="country-button" data-country="JP">Japan</button>
-            <button class="country-button" data-country="MX">Mexico</button>
-            <button class="country-button" data-country="ES">Spain</button>
-            <button class="country-button" data-country="KR">South Korea</button>
-            <button class="country-button" data-country="GB">United Kingdom</button>
-            <button class="country-button" data-country="US">United States</button>
-            <button class="country-button" data-country="UY">Uruguay</button>
-        </div>
-        <p style="text-align: center;">Please select the country</p>
-        <div id="podcasts"></div>
+        <div id="items"></div>
     </div>
 
     <footer>
@@ -208,236 +151,173 @@
             <a href="index.html" class="homepage-link" data-translate-key="Homepage">Homepage</a>
         </div>
         <div class="right">
-            <strong>Source:</strong>
-            <a href="https://open.spotify.com/" target="_blank">
-                <img src="spotifylogo.png" alt="Spotify Logo">
+            <strong data-translate-key="Source">Source:</strong>
+            <a href="https://www.themoviedb.org/" target="_blank">
+                <img src="tmdblogo.png" alt="TMDb Logo">
             </a>
-            <a href="https://linktr.ee/mtheorysoft" target="_blank" class="homepage-link">by Mtheorysoft</a>
         </div>
     </footer>
 
     <script>
         const translations = {
-            "Top 3 Podcasts": {
-                "en": "Top 3 Podcasts",
-                "es": "Top 3 Podcasts"
+            "Top 3 Movies": {
+                "en": "Top 3 Movies for today",
+                "es": "Top 3 Películas del día de hoy"
             },
-            "Description": {
-                "en": "Description",
-                "es": "Descripción"
+            "Release Date": {
+                "en": "Release Date",
+                "es": "Fecha publicación"
             },
-            "Publisher": {
-                "en": "Publisher",
-                "es": "Publicado por"
+            "Genre": {
+                "en": "Genre",
+                "es": "Género"
             },
-            "TotalEpisodes": {
-                "en": "Total Episodes",
-                "es": "Npumero de Episodios"
+            "Rating": {
+                "en": "Rating",
+                "es": "Valoración"
             },
-            "Listen on Spotify": {
-                "en": "Listen on Spotify",
-                "es": "Escuchar en Spotify"
+            "Available on": {
+                "en": "Available on",
+                "es": "Disponible en"
             },
-            "Argentina": {
-                "en": "Argentina",
-                "es": "Argentina"
+            "Learn More": {
+                "en": "Learn More",
+                "es": "Más detalles"
             },
-            "Australia": {
-                "en": "Australia",
-                "es": "Australia"
+            "Homepage": {
+                "en": "Homepage",
+                "es": "Inicio"
             },
-            "Brazil": {
-                "en": "Brazil",
-                "es": "Brasil"
-            },
-            "Canada": {
-                "en": "Canada",
-                "es": "Canadá"
-            },
-            "France": {
-                "en": "France",
-                "es": "Francia"
-            },
-            "Germany": {
-                "en": "Germany",
-                "es": "Alemania"
-            },
-            "India": {
-                "en": "India",
-                "es": "India"
-            },
-            "Italy": {
-                "en": "Italy",
-                "es": "Italia"
-            },
-            "Japan": {
-                "en": "Japan",
-                "es": "Japón"
-            },
-            "Mexico": {
-                "en": "Mexico",
-                "es": "México"
-            },
-            "Spain": {
-                "en": "Spain",
-                "es": "España"
-            },
-            "South Korea": {
-                "en": "South Korea",
-                "es": "Corea del Sur"
-            },
-            "United Kingdom": {
-                "en": "United Kingdom",
-                "es": "Reino Unido"
-            },
-            "United States": {
-                "en": "United States",
-                "es": "Estados Unidos"
-            },
-            "Uruguay": {
-                "en": "Uruguay",
-                "es": "Uruguay"
+            "Source": {
+                "en": "Source",
+                "es": "Fuente"
             }
         };
 
-        let currentPodcasts = [];
         let currentLanguage = 'en'; // Default language
-        let currentCountry = 'AR';  // Default country
+        let fetchedMovies = []; // To store the fetched movies
 
-        async function fetchTopPodcasts(date, country) {
+        function translatePage() {
+            const elementsToTranslate = document.querySelectorAll('[data-translate-key]');
+            elementsToTranslate.forEach(element => {
+                const key = element.getAttribute('data-translate-key');
+                const translation = translations[key] && translations[key][currentLanguage] ? translations[key][currentLanguage] : key;
+                element.innerText = translation;
+            });
+        }
+
+        function capitalizeGenres(genres) {
+            return genres.split(',').map(genre => genre.trim().charAt(0).toUpperCase() + genre.trim().slice(1)).join(', ');
+        }
+
+        function getCurrentDate() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}${month}${day}`;
+        }
+
+        const endpointUrl = `https://rmanfretan.pythonanywhere.com/top3moviesv2/${getCurrentDate()}`;
+
+        async function fetchTopMovies() {
+            const itemsContainer = document.getElementById('items');
+            itemsContainer.innerHTML = ''; // Clear previous items
+
             try {
-                const url = `https://rmanfretan.pythonanywhere.com/top3podcasts/${date}`;
-                console.log(`Fetching podcasts from: ${url}`);
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok: ${response.statusText}`);
-                }
-                const data = await response.json();
-                if (!data[country]) {
-                    throw new Error(`No data found for country code: ${country}`);
-                }
-                currentPodcasts = data[country];
-                displayPodcasts(currentPodcasts);
+                const response = await fetch(endpointUrl);
+                const items = await response.json();
+                fetchedMovies = items; // Store fetched movies in a global variable
+
+                // Avoiding duplicate movie entries
+                const seenMovies = new Set();
+
+                items.forEach(item => {
+                    if (seenMovies.has(item.title)) return; // Skip if already processed
+                    seenMovies.add(item.title); // Mark movie as processed
+
+                    const { title, overview, overview_es, release_date, genres, genres_es, image_url, link_url, rating, trailer_url, providers } = item;
+                    const providersText = providers && providers.length > 0 ? `${translations["Available on"][currentLanguage]}: ${providers.join(', ')}` : '';
+
+                    itemsContainer.innerHTML += `
+                        <div class="item">
+                            <img src="${image_url}" alt="${title}">
+                            <div class="item-info">
+                                <h2 data-translate-key="${title}">${title}</h2>
+                                <p>${currentLanguage === 'es' ? overview_es : overview}</p>
+                                <p><strong data-translate-key="Release Date">Release Date:</strong> ${release_date}</p>
+                                <p><strong data-translate-key="Genre">Genre:</strong> ${currentLanguage === 'es' ? capitalizeGenres(genres_es) : capitalizeGenres(genres)}</p>
+                                <p><strong data-translate-key="Rating">Rating:</strong> ${rating} / 10</p>
+                                ${providersText ? `<p><strong>${providersText}</strong></p>` : ''}
+                                ${trailer_url ? `<p><a href="${trailer_url}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a></p>` : ''}
+                                <p><a href="${link_url}" target="_blank" data-translate-key="Learn More">Learn More</a></p>
+                            </div>
+                        </div>
+                    `;
+                });
+                translatePage(); // Translate the page after fetching and displaying content
             } catch (error) {
-                console.error('Error fetching podcasts:', error);
-                document.getElementById('podcasts').innerHTML = '<p>Error loading podcasts. Please try again later.</p>';
+                console.error("Error fetching movies:", error);
             }
         }
 
-        function displayPodcasts(podcasts) {
-            const container = document.getElementById('podcasts');
-            container.innerHTML = '';
-            podcasts.forEach(podcast => {
-                const podcastElement = document.createElement('div');
-                podcastElement.className = 'item';
-                podcastElement.innerHTML = `
-                    <img src="${podcast.image_url}" alt="${podcast.title}">
-                    <div class="item-info">
-                        <h2>${podcast.title}</h2>
-                        <p><strong>${getTranslation('Description')}:</strong> ${podcast.html_description}</p>
-						<p><strong>${getTranslation('Publisher')}:</strong> ${podcast["publisher:"]}</p>
-						<p><strong>${getTranslation('TotalEpisodes')}:</strong> ${podcast.total_episodes}</p>
-                        <a href="${podcast.spotify_url}" target="_blank">${getTranslation('Listen on Spotify')}</a>
-                    </div>
-                `;
-                container.appendChild(podcastElement);
-            });
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            translatePage(); // Translate static texts
+            fetchTopMovies(); // Fetch and re-render items with the new language
         }
 
-        function getTranslation(key) {
-            return translations[key] && translations[key][currentLanguage] ? translations[key][currentLanguage] : key;
-        }
+        const languageButtons = document.querySelectorAll('.language-selector img.language-flag');
+        languageButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const lang = button.getAttribute('data-lang');
+                setLanguage(lang);
 
-        function getCountryName() {
-            return translations[currentCountry] && translations[currentCountry][currentLanguage] ? translations[currentCountry][currentLanguage] : currentCountry;
-        }
-
-        document.querySelectorAll('.language-flag').forEach(flag => {
-            flag.addEventListener('click', (event) => {
-                currentLanguage = event.target.dataset.lang;
-                document.querySelectorAll('.language-flag').forEach(flag => {
-                    flag.style.borderColor = 'transparent';
-                });
-                event.target.style.borderColor = '#007bff';
-                fetchTopPodcasts(getCurrentDate(), currentCountry); // Use currentCountry instead of 'US'
-            });
-        });
-
-        document.querySelectorAll('.country-button').forEach(button => {
-            button.addEventListener('click', (event) => {
-                currentCountry = event.target.dataset.country; // Update the selected country
-                document.querySelectorAll('.country-button').forEach(button => {
-                    button.classList.remove('selected');
-                });
-                event.target.classList.add('selected');
-                fetchTopPodcasts(getCurrentDate(), currentCountry);
+                // Update selected class
+                languageButtons.forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
             });
         });
 
         // Share button functionality
-        document.querySelector('.share-button').addEventListener('click', async () => {
-            try {
-                const shareData = {
-                    title: getTranslation('Top 3 Podcasts'),
-                    text: generateShareText(),
-                    url: 'https://thetop3.info'
-                };
-				console.log(generateShareText());
-                await navigator.share(shareData);
-            } catch (err) {
-                console.error('Error sharing:', err);
+        const shareButton = document.querySelector('.share-button');
+        const whatsappButton = document.querySelector('.whatsapp-share-button');
+
+        shareButton.addEventListener('click', () => {
+            let shareText = `🎬 ${translations["Top 3 Movies"][currentLanguage]} 🎬\n\n`;
+            fetchedMovies.forEach(movie => {
+                const title = movie.title;
+                const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
+                shareText += `*${title}*\n${overview}\n\n`;
+            });
+
+            if (navigator.share) {
+                navigator.share({
+                    title: translations["Top 3 Movies"][currentLanguage],
+                    text: shareText,
+                    url: 'https://thetop3.info\n\n'
+                });
+            } else {
+                alert("Sharing is not supported on this browser.");
             }
         });
 
-        // WhatsApp share button functionality
-        document.querySelector('.whatsapp-share-button').addEventListener('click', () => {
-			console.log(generateShareText());
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(generateShareText() + '\nhttps://thetop3.info')}`;
+        whatsappButton.addEventListener('click', () => {
+            let shareText = `🎬 ${translations["Top 3 Movies"][currentLanguage]} 🎬\n\n`;
+            fetchedMovies.forEach(movie => {
+                const title = movie.title;
+                const overview = currentLanguage === 'es' ? movie.overview_es : movie.overview;
+                shareText += `*${title}*\n${overview}\n\n`;
+            });
+            shareText += 'https://thetop3.info\n\n';
+
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
             window.open(whatsappUrl, '_blank');
         });
 
-        // Generate the text for sharing
-        function generateShareText() {
-            let text = `🎤 Top 3 Podcasts in ${getCountryFullName(getCountryName())} 🎤\n\n`;
-            currentPodcasts.forEach(podcast => {
-                text += `*${podcast.title}*\n${podcast.description}\n\n`;
-            });
-            return text;
-        }
-
-		// Gets full country name
-		function getCountryFullName(countryCode) {
-		const countryNames = {
-			"AR": "Argentina",
-			"AU": "Australia",
-			"BR": "Brazil",
-			"CA": "Canada",
-			"FR": "France",
-			"DE": "Germany",
-			"IN": "India",
-			"IT": "Italy",
-			"JP": "Japan",
-			"MX": "Mexico",
-			"ES": "Spain",
-			"KR": "South Korea",
-			"GB": "United Kingdom",
-			"US": "United States",
-			"UY": "Uruguay"
-		};
-
-		return countryNames[countryCode] || "Unknown Country";
-	}
-
-		function getCurrentDate() {
-			const today = new Date();
-			const year = today.getFullYear();
-			const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-			const day = String(today.getDate()).padStart(2, '0');
-			return `${year}${month}${day}`;
-		}
-
-        // Default country selection
-        fetchTopPodcasts(getCurrentDate(), currentCountry);
+        window.onload = () => {
+            setLanguage(currentLanguage); // Set default language on load
+        };
     </script>
 </body>
 </html>
