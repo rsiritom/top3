@@ -3,103 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-translate-key="Top 3 Movies">Top 3 Movies</title>
+    <title>Top 3 Podcasts</title>
     <style>
-        /* Your CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        header {
+            background-color: #f4f4f4;
+            padding: 10px;
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .buttons-container {
+            margin-top: 20px;
+        }
+
+        .buttons-container img {
+            width: 50px;  /* Adjust the size of buttons as required */
+            height: 50px;
+            margin: 0 10px;
+            vertical-align: middle;
+        }
+
+        .country-buttons img,
+        .content-buttons img {
+            width: 80px;
+            height: auto;
+            margin: 10px;
+        }
+
+        /* Styles for the language selector */
+        .language-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .language-selector img {
+            width: 30px; /* Adjust this to the desired size */
+            height: auto;
+            margin-left: 10px;
+        }
+
+        .content-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .content-container img {
+            width: 150px;
+            height: auto;
+            margin: 10px;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .content-container img:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="banner">
-            <img src="top3movies_banner.png" alt="Top 3 Movies">
-        </div>
+    <header>
+        <h1>Top 3 Podcasts</h1>
         <div class="language-selector">
-            <a href="index.html">
-                <img src="back.png" alt="Back" title="Back">
-            </a>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png" alt="Spanish" title="Español" id="es" class="language-flag" data-lang="es">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png" alt="English" title="English" id="en" class="language-flag" data-lang="en">
-            <a href="#" class="share-button">
-                <img src="share.png" alt="Share">
-            </a>
-            <a href="#" class="whatsapp-share-button">
-                <img src="sharewhatsapp.png" alt="Share on WhatsApp">
-            </a>
+            <a href="?lang=en"><img src="language_en.png" alt="English"></a>
+            <a href="?lang=es"><img src="language_es.png" alt="Spanish"></a>
         </div>
-        <div id="items"></div>
+    </header>
+
+    <div class="buttons-container">
+        <div class="country-buttons">
+            <a href="?country=country1"><img src="country1.png" alt="Country 1"></a>
+            <a href="?country=country2"><img src="country2.png" alt="Country 2"></a>
+            <a href="?country=country3"><img src="country3.png" alt="Country 3"></a>
+        </div>
+        <div class="content-buttons">
+            <a href="?content=movies"><img src="movies.png" alt="Movies"></a>
+            <a href="?content=series"><img src="series.png" alt="Series"></a>
+            <a href="?content=podcasts"><img src="podcasts.png" alt="Podcasts"></a>
+        </div>
     </div>
 
-    <footer>
-        <div class="left">
-            <a href="index.html" class="homepage-link" data-translate-key="Homepage">Homepage</a>
-        </div>
-        <div class="right">
-            <strong data-translate-key="Source">Source:</strong>
-            <a href="https://www.themoviedb.org/" target="_blank">
-                <img src="tmdblogo.png" alt="TMDb Logo">
-            </a>
-        </div>
-    </footer>
-
-    <script>
-        const translations = {
-            "Top 3 Movies": {
-                "en": "Top 3 Movies for today",
-                "es": "Top 3 Películas del día de hoy"
-            },
-            // Add more translations as needed
-        };
-
-        let currentLanguage = 'es'; // Default language is set to Spanish
-
-        function translatePage() {
-            const elementsToTranslate = document.querySelectorAll('[data-translate-key]');
-            elementsToTranslate.forEach(element => {
-                const key = element.getAttribute('data-translate-key');
-                const translation = translations[key] && translations[key][currentLanguage] ? translations[key][currentLanguage] : key;
-                element.innerText = translation;
-            });
-        }
-
-        async function fetchTopMovies() {
-            const itemsContainer = document.getElementById('items');
-            itemsContainer.innerHTML = ''; // Clear previous items
-
-            const tmdbUrl = 'https://api.themoviedb.org/3/search/movie?api_key=29a18159e2f43f00312a90a7b88dd8d3&with_genres=35&query=terror&language=es-ES';
-
-            try {
-                const response = await fetch(tmdbUrl);
-                const data = await response.json();
-                const movies = data.results.slice(0, 3); // Get top 3 movies
-
-                movies.forEach(movie => {
-                    const movieItem = document.createElement('div');
-                    movieItem.classList.add('item');
-
-                    movieItem.innerHTML = `
-                        <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
-                        <div class="item-info">
-                            <h2>${movie.title}</h2>
-                            <p><strong data-translate-key="Release Date">Fecha publicación:</strong> ${movie.release_date}</p>
-                            <p><strong data-translate-key="Rating">Valoración:</strong> ${movie.vote_average}</p>
-                            <p>${movie.overview}</p>
-                            <a href="https://www.themoviedb.org/movie/${movie.id}" target="_blank" data-translate-key="Learn More">Más detalles</a>
-                        </div>
-                    `;
-
-                    itemsContainer.appendChild(movieItem);
-                });
-
-            } catch (error) {
-                console.error("Failed to fetch top movies:", error);
-                itemsContainer.innerHTML = '<p>Error loading movies. Please try again later.</p>';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchTopMovies();
-            translatePage(); // Call translation after loading
-        });
-    </script>
+    <div class="content-container">
+        <!-- Content images will be placed here -->
+        <img src="podcast-country1.png" alt="Podcast 1">
+        <img src="podcast-country2.png" alt="Podcast 2">
+        <img src="podcast-country3.png" alt="Podcast 3">
+    </div>
 </body>
 </html>
