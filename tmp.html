@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-translate-key="Top 3 Movies">Top 3 Movies</title>
+    <title>Top 3 Movies and Series</title>
     <style>
-        /* Your CSS styles */
         .item {
             margin-bottom: 20px;
         }
@@ -17,12 +16,21 @@
             display: block;
             margin-top: 5px;
         }
+        .container {
+            text-align: center;
+        }
+        .navigation {
+            margin: 20px 0;
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="banner">
-            <img src="top3movies_banner.png" alt="Top 3 Movies">
+            <img src="top3movies_banner.png" alt="Top 3 Movies and Series">
         </div>
         <div class="navigation">
             <a href="index.html">
@@ -38,7 +46,18 @@
 
         <!-- Search Section -->
         <div class="search-section">
-            <input type="text" id="searchTerm" placeholder="Enter search term">
+            <input type="text" id="searchTerm" placeholder="Enter title">
+            <select id="contentType">
+                <option value="movie">Movie</option>
+                <option value="tv">Series</option>
+            </select>
+            <select id="genreSelect">
+                <!-- Options will be populated dynamically -->
+            </select>
+            <input type="date" id="minReleaseDate" placeholder="Minimum Release Date" class="date-input">
+            <input type="date" id="maxReleaseDate" placeholder="Maximum Release Date" class="date-input">
+            <input type="date" id="minAirDate" placeholder="Minimum Air Date" class="date-input hidden">
+            <input type="date" id="maxAirDate" placeholder="Maximum Air Date" class="date-input hidden">
             <button id="searchButton">Search</button>
         </div>
 
@@ -47,10 +66,10 @@
 
     <footer>
         <div class="left">
-            <a href="index.html" class="homepage-link" data-translate-key="Homepage">Homepage</a>
+            <a href="index.html" class="homepage-link">Homepage</a>
         </div>
         <div class="right">
-            <strong data-translate-key="Source">Source:</strong>
+            <strong>Source:</strong>
             <a href="https://www.themoviedb.org/" target="_blank">
                 <img src="tmdblogo.png" alt="TMDb Logo">
             </a>
@@ -60,99 +79,177 @@
     <script>
         const API_KEY = '29a18159e2f43f00312a90a7b88dd8d3';
 
-        async function fetchTopMovies(searchTerm) {
+        const movieGenres = [
+            { id: '28', name: 'Action' },
+            { id: '12', name: 'Adventure' },
+            { id: '16', name: 'Animation' },
+            { id: '35', name: 'Comedy' },
+            { id: '80', name: 'Crime' },
+            { id: '99', name: 'Documentary' },
+            { id: '18', name: 'Drama' },
+            { id: '10751', name: 'Family' },
+            { id: '14', name: 'Fantasy' },
+            { id: '36', name: 'History' },
+            { id: '27', name: 'Horror' },
+            { id: '10402', name: 'Music' },
+            { id: '9648', name: 'Mystery' },
+            { id: '10749', name: 'Romance' },
+            { id: '878', name: 'Science Fiction' },
+            { id: '10770', name: 'TV Movie' },
+            { id: '53', name: 'Thriller' },
+            { id: '10752', name: 'War' },
+            { id: '37', name: 'Western' }
+        ];
+
+        const tvGenres = [
+            { id: '10759', name: 'Action & Adventure' },
+            { id: '10765', name: 'Sci-Fi & Fantasy' },
+            { id: '10766', name: 'Mystery' },
+            { id: '10767', name: 'Talk' },
+            { id: '10768', name: 'War & Politics' },
+            { id: '10770', name: 'TV Movie' },
+            { id: '16', name: 'Animation' },
+            { id: '35', name: 'Comedy' },
+            { id: '80', name: 'Crime' },
+            { id: '99', name: 'Documentary' },
+            { id: '18', name: 'Drama' },
+            { id: '10751', name: 'Family' },
+            { id: '14', name: 'Fantasy' },
+            { id: '36', name: 'History' },
+            { id: '27', name: 'Horror' },
+            { id: '9648', name: 'Mystery' },
+            { id: '10749', name: 'Romance' },
+            { id: '878', name: 'Science Fiction' },
+            { id: '53', name: 'Thriller' },
+            { id: '10752', name: 'War' },
+            { id: '37', name: 'Western' }
+        ];
+
+        function populateGenres(contentType) {
+            const genreSelect = document.getElementById('genreSelect');
+            genreSelect.innerHTML = ''; // Clear existing options
+
+            let genres = contentType === 'movie' ? movieGenres : tvGenres;
+
+            // Add default option
+            genreSelect.innerHTML = '<option value="">Select Genre</option>';
+
+            // Add genre options
+            for (const genre of genres) {
+                const option = document.createElement('option');
+                option.value = genre.id;
+                option.textContent = genre.name;
+                genreSelect.appendChild(option);
+            }
+
+            // Toggle date inputs based on content type
+            toggleDateInputs(contentType);
+        }
+
+        function toggleDateInputs(contentType) {
+            const movieDateInputs = document.querySelectorAll('#minReleaseDate, #maxReleaseDate');
+            const tvDateInputs = document.querySelectorAll('#minAirDate, #maxAirDate');
+            
+            if (contentType === 'movie') {
+                movieDateInputs.forEach(input => input.classList.remove('hidden'));
+                tvDateInputs.forEach(input => input.classList.add('hidden'));
+            } else {
+                movieDateInputs.forEach(input => input.classList.add('hidden'));
+                tvDateInputs.forEach(input => input.classList.remove('hidden'));
+            }
+        }
+
+        async function fetchTopContent(searchTerm, contentType, genreId, minDate, maxDate) {
             const itemsContainer = document.getElementById('items');
             itemsContainer.innerHTML = ''; // Clear previous items
 
-            const tmdbUrl = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(searchTerm)}&language=en-US`;
+            let tmdbUrl = `https://api.themoviedb.org/3/discover/${contentType}?api_key=${API_KEY}&language=en-US`;
+
+            if (searchTerm) {
+                tmdbUrl += `&query=${encodeURIComponent(searchTerm)}`;
+            }
+
+            if (genreId) {
+                tmdbUrl += `&with_genres=${genreId}`;
+            }
+
+            if (contentType === 'tv') {
+                if (minDate) {
+                    tmdbUrl += `&first_air_date.gte=${minDate}`;
+                }
+                if (maxDate) {
+                    tmdbUrl += `&first_air_date.lte=${maxDate}`;
+                }
+            } else { // for movies
+                if (minDate) {
+                    tmdbUrl += `&primary_release_date.gte=${minDate}`;
+                }
+                if (maxDate) {
+                    tmdbUrl += `&primary_release_date.lte=${maxDate}`;
+                }
+            }
 
             try {
                 const response = await fetch(tmdbUrl);
                 const data = await response.json();
-                const movies = data.results.slice(0, 3); // Get top 3 movies
+                
+                // Sort results by popularity in descending order
+                let results = data.results.sort((a, b) => b.popularity - a.popularity);
+                
+                // Get the top 3 most popular items after filtering
+                results = results.slice(0, 3);
 
-                for (const movie of movies) {
-                    const [detailedMovie, trailerUrl] = await Promise.all([
-                        fetchMovieDetails(movie.id), // Fetch detailed info
-                        fetchTrailer(movie.id) // Fetch trailer URL
-                    ]);
+                for (const item of results) {
+                    const itemDetails = await fetchItemDetails(item.id, contentType);
+                    const itemElement = document.createElement('div');
+                    itemElement.classList.add('item');
 
-                    const movieItem = document.createElement('div');
-                    movieItem.classList.add('item');
-
-                    const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'placeholder.jpg';
-
-                    let trailerHTML = '';
-                    if (trailerUrl) {
-                        trailerHTML = `<a href="${trailerUrl}" target="_blank" data-translate-key="Watch Trailer">Watch Trailer</a>`;
-                    }
+                    const posterUrl = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'placeholder.jpg';
 
                     let homepageHTML = '';
-                    if (detailedMovie.homepage) {
-                        homepageHTML = `<a href="${detailedMovie.homepage}" target="_blank" data-translate-key="Watch Now">Watch Now</a>`;
+                    if (itemDetails.homepage) {
+                        homepageHTML = `<a href="${itemDetails.homepage}" target="_blank">Watch Now</a>`;
                     }
 
-                    movieItem.innerHTML = `
-                        <img src="${posterUrl}" alt="${movie.title}">
-                        <div class="item-info">
-                            <h2>${movie.title}</h2>
-                            <p><strong data-translate-key="Release Date">Release Date:</strong> ${movie.release_date}</p>
-                            <p><strong data-translate-key="Rating">Rating:</strong> ${movie.vote_average}</p>
-                            <p><strong data-translate-key="Runtime">Runtime:</strong> ${movie.runtime} minutes</p>
-                            <p><strong data-translate-key="Overview">Overview:</strong> ${movie.overview}</p>
-                            <p><strong data-translate-key="Tagline">Tagline:</strong> ${movie.tagline}</p>
-                            ${trailerHTML}
+                    itemElement.innerHTML = `
+                        <img src="${posterUrl}" alt="${item.title || item.name}">
+                        <div class="item-details">
+                            <strong>${item.title || item.name}</strong>
+                            <p>${itemDetails.overview || 'No description available.'}</p>
                             ${homepageHTML}
-                            <a href="https://www.themoviedb.org/movie/${movie.id}" target="_blank" data-translate-key="Learn More">Learn More</a>
                         </div>
                     `;
-
-                    itemsContainer.appendChild(movieItem);
+                    itemsContainer.appendChild(itemElement);
                 }
-
             } catch (error) {
-                console.error("Failed to fetch top movies:", error);
-                itemsContainer.innerHTML = '<p>Error loading movies. Please try again later.</p>';
+                console.error('Error fetching content:', error);
+                itemsContainer.innerHTML = '<p>Sorry, something went wrong.</p>';
             }
         }
 
-        async function fetchMovieDetails(movieId) {
-            const movieUrl = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${API_KEY}&language=en-US`;
-            try {
-                const response = await fetch(movieUrl);
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error("Failed to fetch movie details:", error);
-                return {}; // Return empty object if there's an error
-            }
+        async function fetchItemDetails(itemId, contentType) {
+            const url = `https://api.themoviedb.org/3/${contentType}/${itemId}?api_key=${API_KEY}&language=en-US`;
+            const response = await fetch(url);
+            return response.json();
         }
 
-        async function fetchTrailer(movieId) {
-            const url = `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${API_KEY}`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                const trailer = data.results.find(video => video.type === 'Trailer');
-                return trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : null;
-            } catch (error) {
-                console.error("Failed to fetch trailer:", error);
-                return null; // Return null if there's an error
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initial search for "action"
-            fetchTopMovies('action');
-
-            // Handle search button click
-            document.getElementById('searchButton').addEventListener('click', () => {
-                const searchTerm = document.getElementById('searchTerm').value.trim();
-                if (searchTerm) {
-                    fetchTopMovies(searchTerm);
-                }
-            });
+        document.getElementById('contentType').addEventListener('change', function() {
+            const contentType = this.value;
+            populateGenres(contentType);
         });
+
+        document.getElementById('searchButton').addEventListener('click', function() {
+            const searchTerm = document.getElementById('searchTerm').value;
+            const contentType = document.getElementById('contentType').value;
+            const genreId = document.getElementById('genreSelect').value;
+            const minDate = contentType === 'tv' ? document.getElementById('minAirDate').value : document.getElementById('minReleaseDate').value;
+            const maxDate = contentType === 'tv' ? document.getElementById('maxAirDate').value : document.getElementById('maxReleaseDate').value;
+
+            fetchTopContent(searchTerm, contentType, genreId, minDate, maxDate);
+        });
+
+        // Initialize genres based on default content type
+        populateGenres(document.getElementById('contentType').value);
     </script>
 </body>
 </html>
