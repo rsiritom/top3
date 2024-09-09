@@ -231,15 +231,24 @@
 
                 console.log('API Response:', data); // Debugging output
 
-                const items = data.results || [];
-                if (items.length === 0) {
+                let items = data.results || [];
+
+                // Sort items by popularity in descending order
+                items.sort((a, b) => b.popularity - a.popularity);
+
+                // Limit to top 3 most popular
+                const top3Items = items.slice(0, 3);
+
+                if (top3Items.length === 0) {
                     itemsContainer.innerHTML = '<p>No results found.</p>';
                 } else {
-                    items.forEach(item => {
+                    top3Items.forEach(item => {
                         const itemElement = document.createElement('div');
                         itemElement.className = 'item';
                         const imageUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
                         const genreNames = item.genre_ids.map(id => getGenreName(id, contentType)).join(', ');
+
+                        const releaseDate = contentType === 'movie' ? item.release_date : item.first_air_date;
 
                         itemElement.innerHTML = `
                             <img src="${imageUrl}" alt="${item.title || item.name}">
@@ -247,6 +256,7 @@
                             <p>Genres: ${genreNames}</p>
                             <p>Popularity: ${item.popularity.toFixed(2)}</p>
                             <p>Rating: ${item.vote_average.toFixed(1)}</p>
+                            <p>Release Date: ${releaseDate || 'Unknown'}</p>
                             <p>${item.overview || 'No overview available.'}</p>
                         `;
                         itemsContainer.appendChild(itemElement);
