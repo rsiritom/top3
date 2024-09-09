@@ -177,7 +177,7 @@
 			event.preventDefault(); // Prevent default link behavior
 			decrementDates(numberOfMonths);
 		});
-		
+				
 		document.getElementById('incrementDateButton').addEventListener('click', (event) => {
 			event.preventDefault(); // Prevent default link behavior
 			incrementDates(numberOfMonths);
@@ -185,7 +185,8 @@
 		
 		function decrementDates(numberOfMonths) {
 		// Decrement the start month and year based on the current values
-			let newStartDate = new Date(startYear, parseInt(startMonth) - 1, 1); // Get current start date
+			let currentStartDate = new Date(startYear, parseInt(startMonth) - 1, 1);
+			let newStartDate = new Date(currentStartDate);
 			newStartDate.setMonth(newStartDate.getMonth() - parseInt(numberOfMonths)); // Subtract number of months
 
 			// Update the startYear and startMonth based on the new date
@@ -202,7 +203,8 @@
 
 		function incrementDates(numberOfMonths) {
 			// Increment the start month and year based on the current values
-			let newStartDate = new Date(startYear, parseInt(startMonth) - 1, 1); // Get current start date
+			let currentStartDate = new Date(startYear, parseInt(startMonth) - 1, 1);
+			let newStartDate = new Date(currentStartDate);
 			newStartDate.setMonth(newStartDate.getMonth() + parseInt(numberOfMonths)); // Add number of months
 
 			// Update the startYear and startMonth based on the new date
@@ -252,7 +254,7 @@
 
         function calculateEndDate(year, month, numberOfMonths) {
 			const startDate = new Date(year, month - 1, 1); // Corrected start date, using 1st day of the month
-			startDate.setMonth(startDate.getMonth() + numberOfMonths); // Adding the number of months directly
+			startDate.setMonth(startDate.getMonth() + parseInt(numberOfMonths)); // Adding the number of months directly
 			const endYear = startDate.getFullYear();
 			const endMonth = String(startDate.getMonth() + 1).padStart(2, '0'); // 1-based month
 			const endDate = `${endYear}-${endMonth}-01`; // Keeping the 1st of the month
