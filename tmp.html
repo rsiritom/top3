@@ -25,6 +25,9 @@
         .hidden {
             display: none;
         }
+        .date-select {
+            margin: 10px;
+        }
     </style>
 </head>
 <body>
@@ -54,10 +57,46 @@
             <select id="genreSelect">
                 <!-- Options will be populated dynamically -->
             </select>
-            <input type="date" id="minReleaseDate" placeholder="Minimum Release Date" class="date-input">
-            <input type="date" id="maxReleaseDate" placeholder="Maximum Release Date" class="date-input">
-            <input type="date" id="minAirDate" placeholder="Minimum Air Date" class="date-input hidden">
-            <input type="date" id="maxAirDate" placeholder="Maximum Air Date" class="date-input hidden">
+
+            <!-- Date Selection -->
+            <div class="date-select">
+                <select id="startYear">
+                    <!-- Options will be populated dynamically -->
+                </select>
+                <select id="startMonth">
+                    <option value="01">January</option>
+                    <option value="02">February</option>
+                    <option value="03">March</option>
+                    <option value="04">April</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+                <span>to</span>
+                <select id="endYear">
+                    <!-- Options will be populated dynamically -->
+                </select>
+                <select id="endMonth">
+                    <option value="01">January</option>
+                    <option value="02">February</option>
+                    <option value="03">March</option>
+                    <option value="04">April</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+
             <button id="searchButton">Search</button>
         </div>
 
@@ -73,6 +112,7 @@
             <a href="https://www.themoviedb.org/" target="_blank">
                 <img src="tmdblogo.png" alt="TMDb Logo">
             </a>
+            <a href="https://linktr.ee/mtheorysoft" target="_blank">by Mtheorysoft</a>
         </div>
     </footer>
 
@@ -141,25 +181,27 @@
                 option.textContent = genre.name;
                 genreSelect.appendChild(option);
             }
-
-            // Toggle date inputs based on content type
-            toggleDateInputs(contentType);
         }
 
-        function toggleDateInputs(contentType) {
-            const movieDateInputs = document.querySelectorAll('#minReleaseDate, #maxReleaseDate');
-            const tvDateInputs = document.querySelectorAll('#minAirDate, #maxAirDate');
-            
-            if (contentType === 'movie') {
-                movieDateInputs.forEach(input => input.classList.remove('hidden'));
-                tvDateInputs.forEach(input => input.classList.add('hidden'));
-            } else {
-                movieDateInputs.forEach(input => input.classList.add('hidden'));
-                tvDateInputs.forEach(input => input.classList.remove('hidden'));
+        function populateDateDropdowns() {
+            const startYearSelect = document.getElementById('startYear');
+            const endYearSelect = document.getElementById('endYear');
+            const currentYear = new Date().getFullYear();
+
+            for (let year = 2000; year <= currentYear; year++) {
+                startYearSelect.add(new Option(year, year));
+                endYearSelect.add(new Option(year, year));
             }
+
+            startYearSelect.value = currentYear;
+            endYearSelect.value = currentYear;
         }
 
-        async function fetchTopContent(searchTerm, contentType, genreId, minDate, maxDate) {
+        function formatDate(year, month) {
+            return `${year}-${month}-01`; // Format as YYYY-MM-DD
+        }
+
+        async function fetchTopContent(searchTerm, contentType, genreId, startYear, startMonth, endYear, endMonth) {
             const itemsContainer = document.getElementById('items');
             itemsContainer.innerHTML = ''; // Clear previous items
 
@@ -173,83 +215,69 @@
                 tmdbUrl += `&with_genres=${genreId}`;
             }
 
+            const startDate = formatDate(startYear, startMonth);
+            const endDate = formatDate(endYear, endMonth);
+
             if (contentType === 'tv') {
-                if (minDate) {
-                    tmdbUrl += `&first_air_date.gte=${minDate}`;
-                }
-                if (maxDate) {
-                    tmdbUrl += `&first_air_date.lte=${maxDate}`;
-                }
+                tmdbUrl += `&first_air_date.gte=${startDate}&first_air_date.lte=${endDate}`;
             } else { // for movies
-                if (minDate) {
-                    tmdbUrl += `&primary_release_date.gte=${minDate}`;
-                }
-                if (maxDate) {
-                    tmdbUrl += `&primary_release_date.lte=${maxDate}`;
-                }
+                tmdbUrl += `&primary_release_date.gte=${startDate}&primary_release_date.lte=${endDate}`;
             }
+
+            // Add sorting by popularity
+            tmdbUrl += `&sort_by=popularity.desc`;
 
             try {
                 const response = await fetch(tmdbUrl);
                 const data = await response.json();
-                
-                // Sort results by popularity in descending order
-                let results = data.results.sort((a, b) => b.popularity - a.popularity);
-                
-                // Get the top 3 most popular items after filtering
-                results = results.slice(0, 3);
-
-                for (const item of results) {
-                    const itemDetails = await fetchItemDetails(item.id, contentType);
-                    const itemElement = document.createElement('div');
-                    itemElement.classList.add('item');
-
-                    const posterUrl = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'placeholder.jpg';
-
-                    let homepageHTML = '';
-                    if (itemDetails.homepage) {
-                        homepageHTML = `<a href="${itemDetails.homepage}" target="_blank">Watch Now</a>`;
-                    }
-
-                    itemElement.innerHTML = `
-                        <img src="${posterUrl}" alt="${item.title || item.name}">
-                        <div class="item-details">
-                            <strong>${item.title || item.name}</strong>
-                            <p>${itemDetails.overview || 'No description available.'}</p>
-                            ${homepageHTML}
-                        </div>
-                    `;
-                    itemsContainer.appendChild(itemElement);
-                }
+                const topResults = data.results
+                    .sort((a, b) => b.popularity - a.popularity) // Sort by popularity
+                    .slice(0, 3); // Get top 3 results
+                displayItems(topResults);
             } catch (error) {
-                console.error('Error fetching content:', error);
-                itemsContainer.innerHTML = '<p>Sorry, something went wrong.</p>';
+                console.error('Error fetching top content:', error);
+                itemsContainer.innerHTML = '<p>Failed to load content.</p>';
             }
         }
 
-        async function fetchItemDetails(itemId, contentType) {
-            const url = `https://api.themoviedb.org/3/${contentType}/${itemId}?api_key=${API_KEY}&language=en-US`;
-            const response = await fetch(url);
-            return response.json();
+        function displayItems(items) {
+            const itemsContainer = document.getElementById('items');
+            items.forEach(item => {
+                const releaseDate = item.release_date || item.first_air_date;
+                const formattedDate = releaseDate ? new Date(releaseDate).toLocaleDateString() : 'Unknown';
+                const div = document.createElement('div');
+                div.classList.add('item');
+                div.innerHTML = `
+                    <h2>${item.title || item.name}</h2>
+                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${item.title || item.name}">
+                    <p><strong>Popularity:</strong> ${item.popularity.toFixed(2)}</p>
+                    <p><strong>Rating:</strong> ${item.vote_average.toFixed(1)}</p>
+                    <p><strong>Release Date:</strong> ${formattedDate}</p>
+                    <p>${item.overview}</p>
+                `;
+                itemsContainer.appendChild(div);
+            });
         }
 
-        document.getElementById('contentType').addEventListener('change', function() {
-            const contentType = this.value;
-            populateGenres(contentType);
-        });
-
-        document.getElementById('searchButton').addEventListener('click', function() {
+        document.getElementById('searchButton').addEventListener('click', () => {
             const searchTerm = document.getElementById('searchTerm').value;
             const contentType = document.getElementById('contentType').value;
             const genreId = document.getElementById('genreSelect').value;
-            const minDate = contentType === 'tv' ? document.getElementById('minAirDate').value : document.getElementById('minReleaseDate').value;
-            const maxDate = contentType === 'tv' ? document.getElementById('maxAirDate').value : document.getElementById('maxReleaseDate').value;
+            const startYear = document.getElementById('startYear').value;
+            const startMonth = document.getElementById('startMonth').value;
+            const endYear = document.getElementById('endYear').value;
+            const endMonth = document.getElementById('endMonth').value;
 
-            fetchTopContent(searchTerm, contentType, genreId, minDate, maxDate);
+            fetchTopContent(searchTerm, contentType, genreId, startYear, startMonth, endYear, endMonth);
         });
 
-        // Initialize genres based on default content type
-        populateGenres(document.getElementById('contentType').value);
+        document.getElementById('contentType').addEventListener('change', (event) => {
+            populateGenres(event.target.value);
+        });
+
+        // Initialize dropdowns
+        populateGenres('movie');
+        populateDateDropdowns();
     </script>
 </body>
 </html>
