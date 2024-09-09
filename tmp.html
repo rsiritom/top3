@@ -275,7 +275,10 @@
 			const genreId = document.getElementById('genreSelect').value;
 			const searchTerm = document.getElementById('searchTerm').value;
 
-			let url = `https://api.themoviedb.org/3/discover/${contentType}?api_key=${API_KEY}&sort_by=popularity.desc&primary_release_date.gte=${startDateDisplay}&primary_release_date.lte=${endDateDisplay}&vote_count.gte=1000`;
+			// Language parameter set to 'es' for Spanish
+			const language = 'es';
+
+			let url = `https://api.themoviedb.org/3/discover/${contentType}?api_key=${API_KEY}&language=${language}&sort_by=popularity.desc&primary_release_date.gte=${startDateDisplay}&primary_release_date.lte=${endDateDisplay}&vote_count.gte=1000`;
 			if (genreId) {
 				url += `&with_genres=${genreId}`;
 			}
@@ -291,7 +294,7 @@
 			} catch (error) {
 				console.error('Error fetching data:', error);
 			}
-		}
+		}														
 		
         function displayItems(items) {
 			const itemsDiv = document.getElementById('items');
@@ -318,11 +321,12 @@
 					<div class="ranking"><span>Ranking:</span> ${item.vote_count}</div>
 					<div class="release-date"><span>Release Date:</span> ${item.release_date || item.first_air_date}</div>
 					<div class="genres"><strong>Genres:</strong> ${item.genre_ids.map(id => movieGenres.find(genre => genre.id === id)?.name || 'Unknown').join(', ')}</div>
+					<div class="overview"><strong>Overview:</strong> ${item.overview}</div>
 					<div class="trailer hidden"></div>
 				`;
 				itemsDiv.appendChild(itemDiv);
 			}
-		}																		
+		}																	
 
         document.getElementById('contentType').addEventListener('change', () => {
             populateGenres(document.getElementById('contentType').value);
