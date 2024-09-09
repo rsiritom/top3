@@ -270,52 +270,59 @@
 
 
         async function fetchTopContent() {
-            const { startDateDisplay, endDateDisplay } = updateDateRange();
-            const contentType = document.getElementById('contentType').value;
-            const genreId = document.getElementById('genreSelect').value;
-            const searchTerm = document.getElementById('searchTerm').value;
+			const { startDateDisplay, endDateDisplay } = updateDateRange();
+			const contentType = document.getElementById('contentType').value;
+			const genreId = document.getElementById('genreSelect').value;
+			const searchTerm = document.getElementById('searchTerm').value;
 
-            let url = `https://api.themoviedb.org/3/discover/${contentType}?api_key=${API_KEY}&sort_by=popularity.desc&primary_release_date.gte=${startDateDisplay}&primary_release_date.lte=${endDateDisplay}&vote_count.gte=1000`;
-            if (genreId) {
-                url += `&with_genres=${genreId}`;
-            }
-            if (searchTerm) {
-                url += `&query=${encodeURIComponent(searchTerm)}`;
-            }
+			let url = `https://api.themoviedb.org/3/discover/${contentType}?api_key=${API_KEY}&sort_by=popularity.desc&primary_release_date.gte=${startDateDisplay}&primary_release_date.lte=${endDateDisplay}&vote_count.gte=1000`;
+			if (genreId) {
+				url += `&with_genres=${genreId}`;
+			}
+			if (searchTerm) {
+				url += `&query=${encodeURIComponent(searchTerm)}`;
+			}
 
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                displayItems(data.results);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        }
-
+			try {
+				const response = await fetch(url);
+				const data = await response.json();
+				// Call displayItems with all results and let displayItems handle the sorting and selection
+				displayItems(data.results);
+			} catch (error) {
+				console.error('Error fetching data:', error);
+			}
+		}
+		
         function displayItems(items) {
-            const itemsDiv = document.getElementById('items');
-            itemsDiv.innerHTML = ''; // Clear previous items
+			const itemsDiv = document.getElementById('items');
+			itemsDiv.innerHTML = ''; // Clear previous items
 
-            for (const item of items) {
-                const itemDiv = document.createElement('div');
-                itemDiv.classList.add('item');
+			// Sort items by popularity
+			items.sort((a, b) => b.popularity - a.popularity);
 
-                const imageUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
-                itemDiv.innerHTML = `
-                    <img src="${imageUrl}" alt="${item.title || item.name}">
-                    <a href="https://www.themoviedb.org/${item.media_type}/${item.id}" target="_blank">
-                        ${item.title || item.name}
-                    </a>
-                    <div class="rating"><span>Rating:</span> ${item.vote_average}</div>
-                    <div class="popularity"><span>Popularity:</span> ${item.popularity}</div>
-                    <div class="ranking"><span>Ranking:</span> ${item.vote_count}</div>
-                    <div class="release-date"><span>Release Date:</span> ${item.release_date || item.first_air_date}</div>
-                    <div class="genres"><strong>Genres:</strong> ${item.genre_ids.map(id => movieGenres.find(genre => genre.id === id)?.name || 'Unknown').join(', ')}</div>
-                    <div class="trailer hidden"></div>
-                `;
-                itemsDiv.appendChild(itemDiv);
-            }
-        }
+			// Take only the top 3 items
+			const topThreeItems = items.slice(0, 3);
+
+			for (const item of topThreeItems) {
+				const itemDiv = document.createElement('div');
+				itemDiv.classList.add('item');
+
+				const imageUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+				itemDiv.innerHTML = `
+					<img src="${imageUrl}" alt="${item.title || item.name}">
+					<a href="https://www.themoviedb.org/${item.media_type}/${item.id}" target="_blank">
+						${item.title || item.name}
+					</a>
+					<div class="rating"><span>Rating:</span> ${item.vote_average}</div>
+					<div class="popularity"><span>Popularity:</span> ${item.popularity}</div>
+					<div class="ranking"><span>Ranking:</span> ${item.vote_count}</div>
+					<div class="release-date"><span>Release Date:</span> ${item.release_date || item.first_air_date}</div>
+					<div class="genres"><strong>Genres:</strong> ${item.genre_ids.map(id => movieGenres.find(genre => genre.id === id)?.name || 'Unknown').join(', ')}</div>
+					<div class="trailer hidden"></div>
+				`;
+				itemsDiv.appendChild(itemDiv);
+			}
+		}																		
 
         document.getElementById('contentType').addEventListener('change', () => {
             populateGenres(document.getElementById('contentType').value);
