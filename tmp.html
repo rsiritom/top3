@@ -205,7 +205,8 @@
             const itemsContainer = document.getElementById('items');
             itemsContainer.innerHTML = ''; // Clear previous items
 
-            let tmdbUrl = `https://api.themoviedb.org/3/discover/${contentType}?api_key=${API_KEY}&language=en-US`;
+            // Set the language parameter to Spanish
+            let tmdbUrl = `https://api.themoviedb.org/3/discover/${contentType}?api_key=${API_KEY}&language=es-ES`;
 
             if (searchTerm) {
                 tmdbUrl += `&query=${encodeURIComponent(searchTerm)}`;
@@ -230,37 +231,65 @@
             try {
                 const response = await fetch(tmdbUrl);
                 const data = await response.json();
-                const topResults = data.results
-                    .sort((a, b) => b.popularity - a.popularity) // Sort by popularity
-                    .slice(0, 3); // Get top 3 results
-                displayItems(topResults);
+
+                if (data.results && data.results.length > 0) {
+                    displayItems(data.results, contentType);
+                } else {
+                    itemsContainer.innerHTML = 'No items found.';
+                }
             } catch (error) {
-                console.error('Error fetching top content:', error);
-                itemsContainer.innerHTML = '<p>Failed to load content.</p>';
+                itemsContainer.innerHTML = 'Error fetching data.';
+                console.error('Error:', error);
             }
         }
 
-        function displayItems(items) {
+        function displayItems(items, contentType) {
             const itemsContainer = document.getElementById('items');
-            items.forEach(item => {
-                const releaseDate = item.release_date || item.first_air_date;
-                const formattedDate = releaseDate ? new Date(releaseDate).toLocaleDateString() : 'Unknown';
-                const div = document.createElement('div');
-                div.classList.add('item');
-                div.innerHTML = `
-                    <h2>${item.title || item.name}</h2>
-                    <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${item.title || item.name}">
-                    <p><strong>Popularity:</strong> ${item.popularity.toFixed(2)}</p>
-                    <p><strong>Rating:</strong> ${item.vote_average.toFixed(1)}</p>
-                    <p><strong>Release Date:</strong> ${formattedDate}</p>
-                    <p>${item.overview}</p>
+            itemsContainer.innerHTML = '';
+
+            if (items.length === 0) {
+                itemsContainer.innerHTML = 'No items found.';
+                return;
+            }
+
+            // Sort items by popularity in descending order
+            items.sort((a, b) => b.popularity - a.popularity);
+
+            // Limit to top 3 items
+            const topItems = items.slice(0, 3);
+
+            for (const item of topItems) {
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('item');
+
+                const title = contentType === 'movie' ? item.title : item.name;
+                const posterPath = item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'placeholder.jpg';
+
+                itemDiv.innerHTML = `
+                    <h2>${title}</h2>
+                    <img src="${posterPath}" alt="${title}">
+                    <div class="details">
+                        <p><strong>Popularity:</strong> ${item.popularity}</p>
+                        <p><strong>Genres:</strong> ${item.genre_ids.map(id => getGenreName(id, contentType)).join(', ')}</p>
+                        <p><strong>Rating:</strong> ${item.vote_average}</p>
+                        <p><strong>Description:</strong> ${item.overview || 'No description available'}</p>
+                        <p><strong>Trailer:</strong> ${item.trailer ? `<a href="${item.trailer}" target="_blank">Watch Trailer</a>` : 'No trailer available'}</p>
+                    </div>
+                    <a href="https://www.themoviedb.org/${contentType}/${item.id}" target="_blank">More Details</a>
                 `;
-                itemsContainer.appendChild(div);
-            });
+
+                itemsContainer.appendChild(itemDiv);
+            }
+        }
+
+        function getGenreName(id, contentType) {
+            const genres = contentType === 'movie' ? movieGenres : tvGenres;
+            const genre = genres.find(g => g.id === id);
+            return genre ? genre.name : 'Unknown';
         }
 
         document.getElementById('searchButton').addEventListener('click', () => {
-            const searchTerm = document.getElementById('searchTerm').value;
+            const searchTerm = document.getElementById('searchTerm').value.trim();
             const contentType = document.getElementById('contentType').value;
             const genreId = document.getElementById('genreSelect').value;
             const startYear = document.getElementById('startYear').value;
@@ -271,13 +300,13 @@
             fetchTopContent(searchTerm, contentType, genreId, startYear, startMonth, endYear, endMonth);
         });
 
+        // Initial setup
+        populateGenres('movie');
+        populateDateDropdowns();
+
         document.getElementById('contentType').addEventListener('change', (event) => {
             populateGenres(event.target.value);
         });
-
-        // Initialize dropdowns
-        populateGenres('movie');
-        populateDateDropdowns();
     </script>
 </body>
 </html>
