@@ -28,6 +28,19 @@
         .date-select {
             margin: 10px;
         }
+        .trailer {
+            margin-top: 10px;
+        }
+        .trailer iframe {
+            width: 100%;
+            height: 315px; /* Adjust height as needed */
+        }
+        .rating, .popularity {
+            margin-top: 10px;
+        }
+        .rating span, .popularity span {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -211,68 +224,95 @@
             if (searchTerm) {
                 tmdbUrl += `&query=${encodeURIComponent(searchTerm)}`;
             }
-
             if (genreId) {
                 tmdbUrl += `&with_genres=${genreId}`;
             }
 
             const startDate = formatDate(startYear, startMonth);
             const endDate = formatDate(endYear, endMonth);
-
-            if (contentType === 'tv') {
-                tmdbUrl += `&first_air_date.gte=${startDate}&first_air_date.lte=${endDate}`;
-            } else {
-                tmdbUrl += `&release_date.gte=${startDate}&release_date.lte=${endDate}`;
-            }
+            tmdbUrl += `&primary_release_date.gte=${startDate}&primary_release_date.lte=${endDate}`;
 
             try {
                 const response = await fetch(tmdbUrl);
                 const data = await response.json();
 
-                console.log('API Response:', data); // Debugging output
+                if (data.results.length > 0) {
+                    const top3Items = data.results.slice(0, 3);
 
-                let items = data.results || [];
+                    for (const item of top3Items) {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'item';
 
-                // Sort items by popularity in descending order
-                items.sort((a, b) => b.popularity - a.popularity);
+                        const img = document.createElement('img');
+                        img.src = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+                        img.alt = item.title || item.name;
+                        itemDiv.appendChild(img);
 
-                // Limit to top 3 most popular
-                const top3Items = items.slice(0, 3);
+                        const title = document.createElement('h3');
+                        title.textContent = item.title || item.name;
+                        itemDiv.appendChild(title);
 
-                if (top3Items.length === 0) {
-                    itemsContainer.innerHTML = '<p>No results found.</p>';
+                        const overview = document.createElement('p');
+                        overview.textContent = item.overview;
+                        itemDiv.appendChild(overview);
+
+                        const rating = document.createElement('div');
+                        rating.className = 'rating';
+                        rating.innerHTML = `<span>Rating:</span> ${item.vote_average} (${item.vote_count} votes)`;
+                        itemDiv.appendChild(rating);
+
+                        const popularity = document.createElement('div');
+                        popularity.className = 'popularity';
+                        popularity.innerHTML = `<span>Popularity:</span> ${item.popularity.toFixed(2)}`;
+                        itemDiv.appendChild(popularity);
+
+                        // Fetch and display the trailer
+                        const trailerUrl = await fetchTrailer(item.id, contentType);
+                        if (trailerUrl) {
+                            const trailerDiv = document.createElement('div');
+                            trailerDiv.className = 'trailer';
+                            const iframe = document.createElement('iframe');
+                            iframe.src = trailerUrl;
+                            iframe.frameBorder = '0';
+                            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                            iframe.allowFullscreen = true;
+                            trailerDiv.appendChild(iframe);
+                            itemDiv.appendChild(trailerDiv);
+                        }
+
+                        itemsContainer.appendChild(itemDiv);
+                    }
                 } else {
-                    top3Items.forEach(item => {
-                        const itemElement = document.createElement('div');
-                        itemElement.className = 'item';
-                        const imageUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
-                        const genreNames = item.genre_ids.map(id => getGenreName(id, contentType)).join(', ');
-
-                        const releaseDate = contentType === 'movie' ? item.release_date : item.first_air_date;
-
-                        itemElement.innerHTML = `
-                            <img src="${imageUrl}" alt="${item.title || item.name}">
-                            <strong>${item.title || item.name}</strong>
-                            <p>Genres: ${genreNames}</p>
-                            <p>Popularity: ${item.popularity.toFixed(2)}</p>
-                            <p>Rating: ${item.vote_average.toFixed(1)}</p>
-                            <p>Release Date: ${releaseDate || 'Unknown'}</p>
-                            <p>${item.overview || 'No overview available.'}</p>
-                        `;
-                        itemsContainer.appendChild(itemElement);
-                    });
+                    itemsContainer.innerHTML = '<p>No results found.</p>';
                 }
             } catch (error) {
-                console.error('Error fetching data:', error);
                 itemsContainer.innerHTML = '<p>Error fetching data.</p>';
             }
         }
 
-        function getGenreName(id, contentType) {
-            const genres = contentType === 'movie' ? movieGenres : tvGenres;
-            const genre = genres.find(g => g.id === id.toString()); // Ensure ID is a string
-            return genre ? genre.name : 'Unknown';
+        async function fetchTrailer(id, type) {
+            const trailerUrl = `https://api.themoviedb.org/3/${type}/${id}/videos?api_key=${API_KEY}&language=es-ES`;
+
+            try {
+                const response = await fetch(trailerUrl);
+                const data = await response.json();
+
+                if (data.results.length > 0) {
+                    const trailer = data.results.find(video => video.site === 'YouTube' && video.type === 'Trailer');
+                    if (trailer) {
+                        return `https://www.youtube.com/embed/${trailer.key}`;
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching trailer:', error);
+            }
+
+            return null; // No trailer found
         }
+
+        document.getElementById('contentType').addEventListener('change', (event) => {
+            populateGenres(event.target.value);
+        });
 
         document.getElementById('searchButton').addEventListener('click', () => {
             const searchTerm = document.getElementById('searchTerm').value;
@@ -286,15 +326,8 @@
             fetchTopContent(searchTerm, contentType, genreId, startYear, startMonth, endYear, endMonth);
         });
 
-        document.getElementById('contentType').addEventListener('change', (event) => {
-            const contentType = event.target.value;
-            populateGenres(contentType);
-        });
-
-        window.onload = () => {
-            populateGenres('movie'); // Default to 'movie'
-            populateDateDropdowns();
-        };
+        populateGenres('movie'); // Default to movies
+        populateDateDropdowns();
     </script>
 </body>
 </html>
