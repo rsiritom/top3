@@ -35,10 +35,10 @@
             width: 100%;
             height: 315px; /* Adjust height as needed */
         }
-        .rating, .popularity {
+        .rating, .popularity, .genres, .platforms {
             margin-top: 10px;
         }
-        .rating span, .popularity span {
+        .rating span, .popularity span, .genres strong, .platforms strong {
             font-weight: bold;
         }
     </style>
@@ -218,7 +218,6 @@
             const itemsContainer = document.getElementById('items');
             itemsContainer.innerHTML = ''; // Clear previous items
 
-            // Set the language parameter to Spanish
             let tmdbUrl = `https://api.themoviedb.org/3/discover/${contentType}?api_key=${API_KEY}&language=es-ES`;
 
             if (searchTerm) {
@@ -256,6 +255,25 @@
                         overview.textContent = item.overview;
                         itemDiv.appendChild(overview);
 
+                        // Display genres
+                        const genreNames = item.genre_ids.map(id => {
+                            const genre = (contentType === 'movie' ? movieGenres : tvGenres).find(g => g.id === id);
+                            return genre ? genre.name : '';
+                        }).filter(name => name).join(', ');
+
+                        const genresContainer = document.createElement('div');
+                        genresContainer.className = 'genres';
+                        genresContainer.innerHTML = `<strong>Genres:</strong> ${genreNames}`;
+                        itemDiv.appendChild(genresContainer);
+
+                        // Display platforms (placeholder)
+                        const platformsList = document.createElement('span');
+                        platformsList.textContent = 'Netflix, HBO Max'; // Example placeholder
+                        const platformsContainer = document.createElement('div');
+                        platformsContainer.className = 'platforms';
+                        platformsContainer.innerHTML = `<strong>Available on:</strong> ${platformsList.textContent}`;
+                        itemDiv.appendChild(platformsContainer);
+
                         const rating = document.createElement('div');
                         rating.className = 'rating';
                         rating.innerHTML = `<span>Rating:</span> ${item.vote_average} (${item.vote_count} votes)`;
@@ -290,29 +308,23 @@
             }
         }
 
-        async function fetchTrailer(id, type) {
-            const trailerUrl = `https://api.themoviedb.org/3/${type}/${id}/videos?api_key=${API_KEY}&language=es-ES`;
-
+        async function fetchTrailer(id, contentType) {
+            const trailerUrl = `https://api.themoviedb.org/3/${contentType}/${id}/videos?api_key=${API_KEY}&language=es-ES`;
             try {
                 const response = await fetch(trailerUrl);
                 const data = await response.json();
-
                 if (data.results.length > 0) {
-                    const trailer = data.results.find(video => video.site === 'YouTube' && video.type === 'Trailer');
+                    const trailer = data.results.find(video => video.type === 'Trailer');
                     if (trailer) {
                         return `https://www.youtube.com/embed/${trailer.key}`;
                     }
                 }
+                return null;
             } catch (error) {
                 console.error('Error fetching trailer:', error);
+                return null;
             }
-
-            return null; // No trailer found
         }
-
-        document.getElementById('contentType').addEventListener('change', (event) => {
-            populateGenres(event.target.value);
-        });
 
         document.getElementById('searchButton').addEventListener('click', () => {
             const searchTerm = document.getElementById('searchTerm').value;
@@ -326,8 +338,13 @@
             fetchTopContent(searchTerm, contentType, genreId, startYear, startMonth, endYear, endMonth);
         });
 
-        populateGenres('movie'); // Default to movies
+        // Initialize dropdowns
+        populateGenres('movie'); // Default content type
         populateDateDropdowns();
+
+        document.getElementById('contentType').addEventListener('change', (event) => {
+            populateGenres(event.target.value);
+        });
     </script>
 </body>
 </html>
