@@ -35,10 +35,10 @@
             width: 100%;
             height: 315px; /* Adjust height as needed */
         }
-        .rating, .popularity, .genres, .platforms {
+        .rating, .popularity, .ranking, .release-date, .genres, .platforms {
             margin-top: 10px;
         }
-        .rating span, .popularity span, .genres strong, .platforms strong {
+        .rating span, .popularity span, .ranking span, .release-date span, .genres strong, .platforms strong {
             font-weight: bold;
         }
     </style>
@@ -90,28 +90,19 @@
                     <option value="11">November</option>
                     <option value="12">December</option>
                 </select>
-                <span>to</span>
-                <select id="endYear">
-                    <!-- Options will be populated dynamically -->
-                </select>
-                <select id="endMonth">
-                    <option value="01">January</option>
-                    <option value="02">February</option>
-                    <option value="03">March</option>
-                    <option value="04">April</option>
-                    <option value="05">May</option>
-                    <option value="06">June</option>
-                    <option value="07">July</option>
-                    <option value="08">August</option>
-                    <option value="09">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
-                </select>
+                <span>+ Number of months:</span>				
+                <input type="number" id="numberOfMonths" min="1" value="1">
+				<a href="#" id="decrementDateButton" style="display:inline-block; margin-left: 10px;">
+					<img src="right-arrow.png" alt="Right Arrow" title="Next Date Range">
+				</a>
+				<a href="#" id="incrementDateButton" style="display:inline-block; margin-left: 10px;">
+					<img src="right-arrow.png" alt="Right Arrow" title="Next Date Range">
+				</a>
             </div>
-
-            <button id="searchButton">Search</button>
         </div>
+
+        <!-- Display Start and End Date -->
+        <div id="dateRange" style="margin-top: 20px; font-weight: bold;"></div>
 
         <div id="items"></div>
     </div>
@@ -178,6 +169,54 @@
             { id: '37', name: 'Western' }
         ];
 
+        let startYear = 2024;
+        let startMonth = '01';
+        let numberOfMonths = 1;
+		
+		document.getElementById('decrementDateButton').addEventListener('click', (event) => {
+			event.preventDefault(); // Prevent default link behavior
+			decrementDates(numberOfMonths);
+		});
+		
+		document.getElementById('incrementDateButton').addEventListener('click', (event) => {
+			event.preventDefault(); // Prevent default link behavior
+			incrementDates(numberOfMonths);
+		});
+		
+		function decrementDates(numberOfMonths) {
+		// Decrement the start month and year based on the current values
+			let newStartDate = new Date(startYear, parseInt(startMonth) - 1, 1); // Get current start date
+			newStartDate.setMonth(newStartDate.getMonth() - parseInt(numberOfMonths)); // Subtract number of months
+
+			// Update the startYear and startMonth based on the new date
+			startYear = newStartDate.getFullYear();
+			startMonth = String(newStartDate.getMonth() + 1).padStart(2, '0'); // Ensure it's always two digits
+
+			// Update the dropdowns
+			document.getElementById('startYear').value = startYear;
+			document.getElementById('startMonth').value = startMonth;
+
+			// Fetch the updated content with the new date range
+			fetchTopContent();
+		}
+
+		function incrementDates(numberOfMonths) {
+			// Increment the start month and year based on the current values
+			let newStartDate = new Date(startYear, parseInt(startMonth) - 1, 1); // Get current start date
+			newStartDate.setMonth(newStartDate.getMonth() + parseInt(numberOfMonths)); // Add number of months
+
+			// Update the startYear and startMonth based on the new date
+			startYear = newStartDate.getFullYear();
+			startMonth = String(newStartDate.getMonth() + 1).padStart(2, '0'); // Ensure it's always two digits
+
+			// Update the dropdowns
+			document.getElementById('startYear').value = startYear;
+			document.getElementById('startMonth').value = startMonth;
+
+			// Fetch the updated content with the new date range
+			fetchTopContent();
+		}
+
         function populateGenres(contentType) {
             const genreSelect = document.getElementById('genreSelect');
             genreSelect.innerHTML = ''; // Clear existing options
@@ -198,153 +237,106 @@
 
         function populateDateDropdowns() {
             const startYearSelect = document.getElementById('startYear');
-            const endYearSelect = document.getElementById('endYear');
             const currentYear = new Date().getFullYear();
 
             for (let year = 2000; year <= currentYear; year++) {
                 startYearSelect.add(new Option(year, year));
-                endYearSelect.add(new Option(year, year));
             }
 
             startYearSelect.value = currentYear;
-            endYearSelect.value = currentYear;
         }
 
         function formatDate(year, month) {
             return `${year}-${month}-01`; // Format as YYYY-MM-DD
         }
 
-        async function fetchTopContent(searchTerm, contentType, genreId, startYear, startMonth, endYear, endMonth) {
-            const itemsContainer = document.getElementById('items');
-            itemsContainer.innerHTML = ''; // Clear previous items
+        function calculateEndDate(year, month, numberOfMonths) {
+			const startDate = new Date(year, month - 1, 1); // Corrected start date, using 1st day of the month
+			startDate.setMonth(startDate.getMonth() + numberOfMonths); // Adding the number of months directly
+			const endYear = startDate.getFullYear();
+			const endMonth = String(startDate.getMonth() + 1).padStart(2, '0'); // 1-based month
+			const endDate = `${endYear}-${endMonth}-01`; // Keeping the 1st of the month
+			return endDate;
+		}
 
-            let tmdbUrl = `https://api.themoviedb.org/3/discover/${contentType}?api_key=${API_KEY}&language=es-ES`;
+		function updateDateRange() {
+			const startDateDisplay = formatDate(startYear, startMonth); // Get the start date in YYYY-MM-DD format
+			const endDateDisplay = calculateEndDate(startYear, parseInt(startMonth), numberOfMonths); // Calculate the correct end date
+			document.getElementById('dateRange').textContent = `Date Range: ${startDateDisplay} to ${endDateDisplay}`;
+			return { startDateDisplay, endDateDisplay };
+		}
 
-            if (searchTerm) {
-                tmdbUrl += `&query=${encodeURIComponent(searchTerm)}`;
-            }
-            if (genreId) {
-                tmdbUrl += `&with_genres=${genreId}`;
-            }
 
-            const startDate = formatDate(startYear, startMonth);
-            const endDate = formatDate(endYear, endMonth);
-            tmdbUrl += `&primary_release_date.gte=${startDate}&primary_release_date.lte=${endDate}`;
-
-            try {
-                const response = await fetch(tmdbUrl);
-                const data = await response.json();
-
-                if (data.results.length > 0) {
-                    const top3Items = data.results.slice(0, 3);
-
-                    for (const item of top3Items) {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'item';
-
-                        const img = document.createElement('img');
-                        img.src = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
-                        img.alt = item.title || item.name;
-                        itemDiv.appendChild(img);
-
-                        const title = document.createElement('h3');
-                        title.textContent = item.title || item.name;
-                        itemDiv.appendChild(title);
-
-                        const overview = document.createElement('p');
-                        overview.textContent = item.overview;
-                        itemDiv.appendChild(overview);
-
-                        // Display genres
-                        const genreNames = item.genre_ids.map(id => {
-                            const genre = (contentType === 'movie' ? movieGenres : tvGenres).find(g => g.id === id);
-                            return genre ? genre.name : '';
-                        }).filter(name => name).join(', ');
-
-                        const genresContainer = document.createElement('div');
-                        genresContainer.className = 'genres';
-                        genresContainer.innerHTML = `<strong>Genres:</strong> ${genreNames}`;
-                        itemDiv.appendChild(genresContainer);
-
-                        // Display platforms (placeholder)
-                        const platformsList = document.createElement('span');
-                        platformsList.textContent = 'Netflix, HBO Max'; // Example placeholder
-                        const platformsContainer = document.createElement('div');
-                        platformsContainer.className = 'platforms';
-                        platformsContainer.innerHTML = `<strong>Available on:</strong> ${platformsList.textContent}`;
-                        itemDiv.appendChild(platformsContainer);
-
-                        const rating = document.createElement('div');
-                        rating.className = 'rating';
-                        rating.innerHTML = `<span>Rating:</span> ${item.vote_average} (${item.vote_count} votes)`;
-                        itemDiv.appendChild(rating);
-
-                        const popularity = document.createElement('div');
-                        popularity.className = 'popularity';
-                        popularity.innerHTML = `<span>Popularity:</span> ${item.popularity.toFixed(2)}`;
-                        itemDiv.appendChild(popularity);
-
-                        // Fetch and display the trailer
-                        const trailerUrl = await fetchTrailer(item.id, contentType);
-                        if (trailerUrl) {
-                            const trailerDiv = document.createElement('div');
-                            trailerDiv.className = 'trailer';
-                            const iframe = document.createElement('iframe');
-                            iframe.src = trailerUrl;
-                            iframe.frameBorder = '0';
-                            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-                            iframe.allowFullscreen = true;
-                            trailerDiv.appendChild(iframe);
-                            itemDiv.appendChild(trailerDiv);
-                        }
-
-                        itemsContainer.appendChild(itemDiv);
-                    }
-                } else {
-                    itemsContainer.innerHTML = '<p>No results found.</p>';
-                }
-            } catch (error) {
-                itemsContainer.innerHTML = '<p>Error fetching data.</p>';
-            }
-        }
-
-        async function fetchTrailer(id, contentType) {
-            const trailerUrl = `https://api.themoviedb.org/3/${contentType}/${id}/videos?api_key=${API_KEY}&language=es-ES`;
-            try {
-                const response = await fetch(trailerUrl);
-                const data = await response.json();
-                if (data.results.length > 0) {
-                    const trailer = data.results.find(video => video.type === 'Trailer');
-                    if (trailer) {
-                        return `https://www.youtube.com/embed/${trailer.key}`;
-                    }
-                }
-                return null;
-            } catch (error) {
-                console.error('Error fetching trailer:', error);
-                return null;
-            }
-        }
-
-        document.getElementById('searchButton').addEventListener('click', () => {
-            const searchTerm = document.getElementById('searchTerm').value;
+        async function fetchTopContent() {
+            const { startDateDisplay, endDateDisplay } = updateDateRange();
             const contentType = document.getElementById('contentType').value;
             const genreId = document.getElementById('genreSelect').value;
-            const startYear = document.getElementById('startYear').value;
-            const startMonth = document.getElementById('startMonth').value;
-            const endYear = document.getElementById('endYear').value;
-            const endMonth = document.getElementById('endMonth').value;
+            const searchTerm = document.getElementById('searchTerm').value;
 
-            fetchTopContent(searchTerm, contentType, genreId, startYear, startMonth, endYear, endMonth);
+            let url = `https://api.themoviedb.org/3/discover/${contentType}?api_key=${API_KEY}&sort_by=popularity.desc&primary_release_date.gte=${startDateDisplay}&primary_release_date.lte=${endDateDisplay}&vote_count.gte=1000`;
+            if (genreId) {
+                url += `&with_genres=${genreId}`;
+            }
+            if (searchTerm) {
+                url += `&query=${encodeURIComponent(searchTerm)}`;
+            }
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayItems(data.results);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function displayItems(items) {
+            const itemsDiv = document.getElementById('items');
+            itemsDiv.innerHTML = ''; // Clear previous items
+
+            for (const item of items) {
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('item');
+
+                const imageUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+                itemDiv.innerHTML = `
+                    <img src="${imageUrl}" alt="${item.title || item.name}">
+                    <a href="https://www.themoviedb.org/${item.media_type}/${item.id}" target="_blank">
+                        ${item.title || item.name}
+                    </a>
+                    <div class="rating"><span>Rating:</span> ${item.vote_average}</div>
+                    <div class="popularity"><span>Popularity:</span> ${item.popularity}</div>
+                    <div class="ranking"><span>Ranking:</span> ${item.vote_count}</div>
+                    <div class="release-date"><span>Release Date:</span> ${item.release_date || item.first_air_date}</div>
+                    <div class="genres"><strong>Genres:</strong> ${item.genre_ids.map(id => movieGenres.find(genre => genre.id === id)?.name || 'Unknown').join(', ')}</div>
+                    <div class="trailer hidden"></div>
+                `;
+                itemsDiv.appendChild(itemDiv);
+            }
+        }
+
+        document.getElementById('contentType').addEventListener('change', () => {
+            populateGenres(document.getElementById('contentType').value);
         });
 
-        // Initialize dropdowns
-        populateGenres('movie'); // Default content type
+        document.getElementById('searchTerm').addEventListener('input', fetchTopContent);
+        document.getElementById('genreSelect').addEventListener('change', fetchTopContent);
+        document.getElementById('startYear').addEventListener('change', (event) => {
+            startYear = event.target.value;
+            fetchTopContent();
+        });
+        document.getElementById('startMonth').addEventListener('change', (event) => {
+            startMonth = event.target.value;
+            fetchTopContent();
+        });
+        document.getElementById('numberOfMonths').addEventListener('input', (event) => {
+            numberOfMonths = event.target.value;
+            fetchTopContent();
+        });
+
+        populateGenres('movie'); // Populate genres for movies by default
         populateDateDropdowns();
-
-        document.getElementById('contentType').addEventListener('change', (event) => {
-            populateGenres(event.target.value);
-        });
+        fetchTopContent(); // Initial fetch
     </script>
 </body>
 </html>
